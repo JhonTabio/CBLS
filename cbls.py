@@ -3,17 +3,85 @@ from lsprotocol.types import (
     CompletionItem, CompletionParams, CompletionOptions,
     Diagnostic, DiagnosticSeverity,
     DidChangeTextDocumentParams, DidOpenTextDocumentParams,
-    Position, Range,
-    TEXT_DOCUMENT_COMPLETION, TEXT_DOCUMENT_DID_OPEN, TEXT_DOCUMENT_DID_CHANGE,
+    InitializeParams, InitializeResult,
+    Position, Range, SemanticTokensRegistrationOptions,
+    SemanticTokens, SemanticTokensLegend, SemanticTokensOptions, 
+    SemanticTokensParams, ServerCapabilities, TextDocumentSyncKind,
+    INITIALIZE, TEXT_DOCUMENT_COMPLETION, TEXT_DOCUMENT_DID_OPEN, 
+    TEXT_DOCUMENT_DID_CHANGE, TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL
     )
 
 server = LanguageServer("cbls", "v0.1")
+
+TOKEN_TYPES = [
+    "keyword",
+    "function",
+    "variable",
+    "class",
+    "string"
+]
+
+TOKEN_MODIFIERS = [
+    "declaration",
+    "readonly",
+    "static"
+]
+
+legend = SemanticTokensLegend(token_types=TOKEN_TYPES, token_modifiers=TOKEN_MODIFIERS)
+keywords = ["if", "while", "return", "for", "def", "class"]
+
+@server.feature(INITIALIZE)
+async def initialize(s: LanguageServer, p: InitializeParams) -> InitializeResult:
+    """Handles LSP server initialization and registers capabilities."""
+
+    result = InitializeResult(
+        capabilities=ServerCapabilities(
+            text_document_sync=TextDocumentSyncKind.Incremental,
+            semantic_tokens_provider=SemanticTokensOptions(legend=legend, full=True, range=False)
+        )
+    )
+    
+    return result
+
+@server.feature(TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL, SemanticTokensRegistrationOptions(legend=legend))
+async def semantic_tokens(s: LanguageServer, p: SemanticTokensParams) -> SemanticTokens:
+    """
+        Provides semantic token coloring for syntax highlighting
+    """
+
+    #s.show_message_log("teessttttt")
+
+    uri = p.text_document.uri
+    text = s.workspace.get_text_document(uri).source
+    lines = text.split('\n')
+
+    tokens = []
+
+    for i, line in enumerate(lines):
+        words = line.split()
+
+        for word in words:
+            start = line.find(word)
+            length = len(word)
+
+            if start == -1:
+                continue
+            
+            # Keyword
+            if word in keywords:
+                tokens.extend([i, start, length, 0, 0])
+                s.show_message(f"Found {word} at ({start},{length}) line {i}")
+            # String
+            elif word.startswith('"') and word.endswith('"'):
+                tokens.extend([i, start, length, 1, 0])
+
+    return SemanticTokens(data=tokens)
 
 @server.feature(
     TEXT_DOCUMENT_COMPLETION,
     CompletionOptions(trigger_characters=["."]),
 )
-def completion(p: CompletionParams):
+def completion(p: CompletionParams) -> list[CompletionItem]:
     """
         Handles autocomplete suggestions
     """
@@ -34,7 +102,7 @@ async def did_open(s: LanguageServer, p: DidOpenTextDocumentParams):
     """
         Handles text when document is opened in the editor
     """
-    s.show_message("This did, in fact, open")
+    #s.show_message("This did, in fact, open")
 
 @server.feature(TEXT_DOCUMENT_DID_CHANGE)
 async def did_change(s: LanguageServer, p: DidChangeTextDocumentParams):
