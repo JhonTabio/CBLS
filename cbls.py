@@ -1,3 +1,5 @@
+#from dotenv import load_dotenv
+from os import getenv
 from pygls.server import LanguageServer
 from lsprotocol.types import (
     CompletionItem, CompletionParams, CompletionOptions,
@@ -9,7 +11,26 @@ from lsprotocol.types import (
     TEXT_DOCUMENT_DID_CHANGE, TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL
     )
 
+"""
+load_dotenv()
+
+scriptlex_path = getenv("SCRIPTLEX_PATH")
+
+if scriptlex_path:
+    from sys import path
+    path.insert(1, scriptlex_path)
+
+import scriptlex
+print(scriptlex.keywords)
+"""
+
 class CraftBlockLanguageServer(LanguageServer):
+    """
+        CraftBlockScript Language Server
+
+        Currently able to highlight keywords and detect '#' tokens
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
