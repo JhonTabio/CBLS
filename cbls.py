@@ -1,6 +1,5 @@
 #from dotenv import load_dotenv
-from os import getenv
-from pygls.server import LanguageServer
+#from os import getenv
 from lsprotocol.types import (
     CompletionItem, CompletionParams, CompletionOptions,
     Diagnostic, DiagnosticSeverity,
@@ -10,31 +9,21 @@ from lsprotocol.types import (
     TEXT_DOCUMENT_COMPLETION, TEXT_DOCUMENT_DID_OPEN, 
     TEXT_DOCUMENT_DID_CHANGE, TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL
     )
+from modules.CraftBlockLanguageServer import CraftBlockLanguageServer
 
 """
 load_dotenv()
 
-scriptlex_path = getenv("SCRIPTLEX_PATH")
+scriptlex_path = getenv("CBSCRIPT_PATH")
 
 if scriptlex_path:
     from sys import path
     path.insert(1, scriptlex_path)
 
 import scriptlex
-print(scriptlex.keywords)
 """
 
-class CraftBlockLanguageServer(LanguageServer):
-    """
-        CraftBlockScript Language Server
-
-        Currently able to highlight keywords and detect '#' tokens
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-server = LanguageServer("cbls", "v0.1")
+server = CraftBlockLanguageServer("cbls", "v0.1")
 
 TOKEN_TYPES = [
     "keyword",
@@ -62,7 +51,7 @@ KEYWORDS = [
 legend = SemanticTokensLegend(token_types=TOKEN_TYPES, token_modifiers=TOKEN_MODIFIERS)
 
 @server.feature(TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL, SemanticTokensRegistrationOptions(legend=legend, full=True))
-async def semantic_tokens(s: LanguageServer, p: SemanticTokensParams) -> SemanticTokens:
+async def semantic_tokens(s: CraftBlockLanguageServer, p: SemanticTokensParams) -> SemanticTokens:
     """
         Provides semantic token coloring for syntax highlighting
     """
@@ -114,14 +103,14 @@ def completion(p: CompletionParams) -> list[CompletionItem]:
     ]
 
 @server.feature(TEXT_DOCUMENT_DID_OPEN)
-async def did_open(s: LanguageServer, p: DidOpenTextDocumentParams):
+async def did_open(s: CraftBlockLanguageServer, p: DidOpenTextDocumentParams):
     """
         Handles text when document is opened in the editor
     """
     s.show_message("This did, in fact, open")
 
 @server.feature(TEXT_DOCUMENT_DID_CHANGE)
-async def did_change(s: LanguageServer, p: DidChangeTextDocumentParams):
+async def did_change(s: CraftBlockLanguageServer, p: DidChangeTextDocumentParams):
     """
         Handles live text changes in the editor
 
