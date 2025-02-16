@@ -3,13 +3,15 @@ from lsprotocol.types import (
     CompletionItem, CompletionParams, CompletionOptions,
     Diagnostic, DiagnosticSeverity,
     DidChangeTextDocumentParams, DidOpenTextDocumentParams,
-    InitializeParams, InitializeResult,
     Position, Range, SemanticTokensRegistrationOptions,
-    SemanticTokens, SemanticTokensLegend, SemanticTokensOptions, 
-    SemanticTokensParams, ServerCapabilities, TextDocumentSyncKind,
-    INITIALIZE, TEXT_DOCUMENT_COMPLETION, TEXT_DOCUMENT_DID_OPEN, 
+    SemanticTokens, SemanticTokensLegend, SemanticTokensParams, 
+    TEXT_DOCUMENT_COMPLETION, TEXT_DOCUMENT_DID_OPEN, 
     TEXT_DOCUMENT_DID_CHANGE, TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL
     )
+
+class CraftBlockLanguageServer(LanguageServer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 server = LanguageServer("cbls", "v0.1")
 
@@ -27,29 +29,22 @@ TOKEN_MODIFIERS = [
     "static"
 ]
 
+KEYWORDS = [
+    "if", 
+    "while", 
+    "return", 
+    "for", 
+    "def", 
+    "class"
+]
+
 legend = SemanticTokensLegend(token_types=TOKEN_TYPES, token_modifiers=TOKEN_MODIFIERS)
-keywords = ["if", "while", "return", "for", "def", "class"]
 
-@server.feature(INITIALIZE)
-async def initialize(s: LanguageServer, p: InitializeParams) -> InitializeResult:
-    """Handles LSP server initialization and registers capabilities."""
-
-    result = InitializeResult(
-        capabilities=ServerCapabilities(
-            text_document_sync=TextDocumentSyncKind.Incremental,
-            semantic_tokens_provider=SemanticTokensOptions(legend=legend, full=True, range=False)
-        )
-    )
-    
-    return result
-
-@server.feature(TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL, SemanticTokensRegistrationOptions(legend=legend))
+@server.feature(TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL, SemanticTokensRegistrationOptions(legend=legend, full=True))
 async def semantic_tokens(s: LanguageServer, p: SemanticTokensParams) -> SemanticTokens:
     """
         Provides semantic token coloring for syntax highlighting
     """
-
-    #s.show_message_log("teessttttt")
 
     uri = p.text_document.uri
     text = s.workspace.get_text_document(uri).source
@@ -68,7 +63,7 @@ async def semantic_tokens(s: LanguageServer, p: SemanticTokensParams) -> Semanti
                 continue
             
             # Keyword
-            if word in keywords:
+            if word in KEYWORDS:
                 tokens.extend([i, start, length, 0, 0])
                 s.show_message(f"Found {word} at ({start},{length}) line {i}")
             # String
@@ -102,7 +97,7 @@ async def did_open(s: LanguageServer, p: DidOpenTextDocumentParams):
     """
         Handles text when document is opened in the editor
     """
-    #s.show_message("This did, in fact, open")
+    s.show_message("This did, in fact, open")
 
 @server.feature(TEXT_DOCUMENT_DID_CHANGE)
 async def did_change(s: LanguageServer, p: DidChangeTextDocumentParams):
