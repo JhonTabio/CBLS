@@ -1,3 +1,6 @@
-.env
-cbls/
 *.cbs
+.env
+*.pyc
+
+cbls/
+**/__pycache__/
