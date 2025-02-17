@@ -1,53 +1,9 @@
 from typing import Dict, List
-import attrs
-import enum
-from lsprotocol.types import (
-    SemanticTokenModifiers,
-    SemanticTokenTypes)
 from pygls.server import LanguageServer
-
-class TokenModifier(enum.IntFlag):
-    deprecated = enum.auto()
-    readonly = enum.auto()
-    defaultLibrary = enum.auto()
-    definition = enum.auto()
-
-@attrs.define
-class Token:
-    """
-        Tokens are sent to the client as a long list of numbers, each group of 5 numbers describe
-        a single token.
-        
-            - The first 3 numbers describe the token's line number, character index and length,
-              **relative to the start of the previous token**
-            - Thr 4th number describes a token's type
-            - The 5th number specifies zero or more modifiers to apply to a token
-    """
-    line: int       # Token's line number
-    offset: int     # Character index
-    text: str       # Instead of length, we opt for the text itself
-
-    token_type: str = "" # Token type
-    token_modifiers: List[TokenModifier] = attrs.field(factory=list) # Token Modifier
-
-
-TOKEN_TYPES = [
-    "function",
-    "keyword",
-    "operator",
-    "parameter",
-    "type",
-    "variable"
-]
-
-KEYWORDS = [
-    "if", 
-    "while", 
-    "return", 
-    "for", 
-    "def", 
-    "class"
-]
+from pygls.workspace import TextDocument
+from modules.TokenUtils import (
+        Token, 
+        IDENTIFIERS, SPACE)
 
 class CraftBlockLanguageServer(LanguageServer):
     """
@@ -60,4 +16,47 @@ class CraftBlockLanguageServer(LanguageServer):
         super().__init__(*args, **kwargs)
 
         self.tokens: Dict[str, List[Token]] = {}
-    
+
+
+    def lex(self, document: TextDocument) -> List[Token]:
+        """
+            Extract tokens from a given document
+        """
+
+        res = []
+
+        prev_line, prev_offset = 0, 0
+
+        for i, line in enumerate(document.lines):
+            prev_offset = current_offset = 0
+            remaining = len(line)
+
+            while line:
+                if (match := SPACE.match(line)) is not None: # Skip whitespaces
+                    current_offset += len(match.group(0))
+                    line = line[match.end():]
+
+                elif (match := IDENTIFIERS.match(line)) is not None:
+                    identified_text = match.group(0)
+
+                    res.append(
+                        Token(
+                            line=i - prev_line,
+                            offset = current_offset - prev_offset,
+                            text=identified_text
+                            )
+                        )
+
+                    line = line[match.end():]
+                    prev_offset = current_offset
+                    prev_line = i
+                    current_offset += len(identified_text)
+
+                else:
+                    raise RuntimeError(f"Could not match {line!r}")
+
+                if (n := len(line)) == remaining:
+                    raise RuntimeError("Managed our way to an infinite loop")
+                else:
+                    remaining = n
+        return res
