@@ -2,8 +2,9 @@ from typing import Dict, List
 from pygls.server import LanguageServer
 from pygls.workspace import TextDocument
 from modules.TokenUtils import (
-        KEYWORDS,
         Token, 
+        COMMANDS,
+        KEYWORDS,
         IDENTIFIERS, SPACE)
 
 class CraftBlockLanguageServer(LanguageServer):
@@ -36,6 +37,23 @@ class CraftBlockLanguageServer(LanguageServer):
                 if (match := SPACE.match(line)) is not None: # Skip whitespaces
                     current_offset += len(match.group(0))
                     line = line[match.end():]
+
+                elif (match := COMMANDS.match(line)) is not None:
+                    command = match.group(0).strip()
+                    line_count = command.count('\n')
+
+                    res.append(
+                        Token(
+                            line=i - prev_line + line_count,
+                            offset = current_offset - prev_offset,
+                            text=command
+                            )
+                        )
+
+                    line = line[match.end():]
+                    prev_offset = current_offset
+                    prev_line = i
+                    current_offset += len(command)
 
                 elif (match := IDENTIFIERS.match(line)) is not None:
                     identified_text = match.group(0)
@@ -83,6 +101,8 @@ class CraftBlockLanguageServer(LanguageServer):
         for idx, token in enumerate(tokens):
             if token.text in KEYWORDS:
                 token.token_type = "keyword"
+            elif token.text[0] == '/':
+                token.token_type = "command"
             else:
                 token.token_type = "variable"
 

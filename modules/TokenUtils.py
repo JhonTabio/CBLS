@@ -29,6 +29,7 @@ class Token:
 
 
 TOKEN_TYPES = [
+    "command",
     "function",
     "keyword",
     "operator",
@@ -52,6 +53,11 @@ KEYWORDS = [
 # First character *must* be a letter/underscore
 # The remaining can be letters, numbers or underscores
 IDENTIFIERS = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+
+# Able to catch multiple command lines
+# Captures all leading whitespace
+# First character *must* be a '/'
+COMMANDS = re.compile(r"(?m:^\s*\/.+)")
 
 # Symbol characters
 SYMBOLS = re.compile(r"[\+\-\=\,\*/\(\)\{\}]")
