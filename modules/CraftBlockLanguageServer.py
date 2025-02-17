@@ -2,6 +2,7 @@ from typing import Dict, List
 from pygls.server import LanguageServer
 from pygls.workspace import TextDocument
 from modules.TokenUtils import (
+        KEYWORDS,
         Token, 
         IDENTIFIERS, SPACE)
 
@@ -60,3 +61,37 @@ class CraftBlockLanguageServer(LanguageServer):
                 else:
                     remaining = n
         return res
+
+    def process_tokens(self, tokens: List[Token]):
+        """
+            Process all of our tokens, provide modifier context
+        """
+        def prev(idx):
+            """Get the previous token, if possible"""
+            if idx < 0:
+                return None
+
+            return tokens[idx - 1]
+
+        def next(idx):
+            """Get the next token, if possible"""
+            if idx >= len(tokens) - 1:
+                return None
+
+            return tokens[idx + 1]
+
+        for idx, token in enumerate(tokens):
+            if token.text in KEYWORDS:
+                token.token_type = "keyword"
+            else:
+                token.token_type = "variable"
+
+    def parse(self, document: TextDocument):
+        """
+            Parse a given document, extracting and retrieving context for 
+            tokens and storing them
+        """
+        tokens = self.lex(document)
+        self.process_tokens(tokens)
+        self.tokens[document.uri] = tokens
+

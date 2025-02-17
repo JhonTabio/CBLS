@@ -1,5 +1,4 @@
-#from dotenv import load_dotenv
-#from os import getenv
+from functools import reduce
 from lsprotocol.types import (
     CompletionItem, CompletionParams, CompletionOptions,
     Diagnostic, DiagnosticSeverity,
@@ -10,45 +9,12 @@ from lsprotocol.types import (
     TEXT_DOCUMENT_DID_CHANGE, TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL
     )
 from modules.CraftBlockLanguageServer import CraftBlockLanguageServer
-
-"""
-load_dotenv()
-
-scriptlex_path = getenv("CBSCRIPT_PATH")
-
-if scriptlex_path:
-    from sys import path
-    path.insert(1, scriptlex_path)
-
-import scriptlex
-"""
+from modules.TokenUtils import TokenModifier, TOKEN_TYPES
+from operator import or_
 
 server = CraftBlockLanguageServer("cbls", "v0.1")
 
-TOKEN_TYPES = [
-    "keyword",
-    "function",
-    "variable",
-    "class",
-    "string"
-]
-
-TOKEN_MODIFIERS = [
-    "declaration",
-    "readonly",
-    "static"
-]
-
-KEYWORDS = [
-    "if", 
-    "while", 
-    "return", 
-    "for", 
-    "def", 
-    "class"
-]
-
-legend = SemanticTokensLegend(token_types=TOKEN_TYPES, token_modifiers=TOKEN_MODIFIERS)
+legend = SemanticTokensLegend(token_types=TOKEN_TYPES, token_modifiers=[m.name for m in TokenModifier if m.name is not None])
 
 @server.feature(TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL, SemanticTokensRegistrationOptions(legend=legend, full=True))
 async def semantic_tokens(s: CraftBlockLanguageServer, p: SemanticTokensParams) -> SemanticTokens:
@@ -56,31 +22,21 @@ async def semantic_tokens(s: CraftBlockLanguageServer, p: SemanticTokensParams) 
         Provides semantic token coloring for syntax highlighting
     """
 
-    uri = p.text_document.uri
-    text = s.workspace.get_text_document(uri).source
-    lines = text.split('\n')
+    data = []
+    tokens = s.tokens.get(p.text_document.uri, [])
 
-    tokens = []
+    for token in tokens:
+        data.extend(
+            [
+                token.line,
+                token.offset,
+                len(token.text),
+                TOKEN_TYPES.index(token.token_type),
+                reduce(or_, token.token_modifiers, 0),
+            ]
+        )
 
-    for i, line in enumerate(lines):
-        words = line.split()
-
-        for word in words:
-            start = line.find(word)
-            length = len(word)
-
-            if start == -1:
-                continue
-            
-            # Keyword
-            if word in KEYWORDS:
-                tokens.extend([i, start, length, 0, 0])
-                s.show_message(f"Found {word} at ({start},{length}) line {i}")
-            # String
-            elif word.startswith('"') and word.endswith('"'):
-                tokens.extend([i, start, length, 1, 0])
-
-    return SemanticTokens(data=tokens)
+    return SemanticTokens(data=data)
 
 @server.feature(
     TEXT_DOCUMENT_COMPLETION,
@@ -107,7 +63,8 @@ async def did_open(s: CraftBlockLanguageServer, p: DidOpenTextDocumentParams):
     """
         Handles text when document is opened in the editor
     """
-    s.show_message("This did, in fact, open")
+    document = s.workspace.get_text_document(p.text_document.uri)
+    s.parse(document)
 
 @server.feature(TEXT_DOCUMENT_DID_CHANGE)
 async def did_change(s: CraftBlockLanguageServer, p: DidChangeTextDocumentParams):
@@ -118,9 +75,12 @@ async def did_change(s: CraftBlockLanguageServer, p: DidChangeTextDocumentParams
     """
 
     uri = p.text_document.uri
-    text = s.workspace.get_text_document(uri).source # To retrieve full document
+    document = s.workspace.get_text_document(uri)
+    text = document.source # To retrieve full document
     #text = p.content_changes[0].text # To retireve what was changed
     lines = text.split('\n')
+
+    s.parse(document)
 
     diagnostics = []
 
