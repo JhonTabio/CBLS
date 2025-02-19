@@ -1,3 +1,4 @@
+*.cblib
 *.cbs
 .env
 *.pyc
