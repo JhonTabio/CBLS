@@ -53,7 +53,7 @@ class CBLex(object):
     # Comment token
     def t_COMMENT(self, t):
         r"\#.+"
-        return t
+        pass
     
     # Newline token
     def t_NEWLINE(self, t):

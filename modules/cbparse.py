@@ -14,6 +14,7 @@ class CBParse(object):
         self.lexer = lexer
         self.tokens = lexer.tokens
         self.parser = yacc.yacc(module=self)
+        self.file_params = ["scale"]
 
         self.data = None
         self.diagnostics: list[CBDiagnostic] = []
@@ -64,6 +65,23 @@ class CBParse(object):
         """optdesc : DESC error optnewlines"""
         p[0] = "No Description"
         self.diagnostics[-1].label = "Expected a string"
+
+    # File param rules
+    def p_file_params(self, p):
+        """file_params : file_param file_params optnewlines
+                        | empty"""
+        if len(p) > 2:
+            n, v = p[1]
+            p[2][n] = v
+            p[0] = p[2]
+        else:
+            p[0]
+
+    def p_file_param(self, p):
+        """file_param : ID int newlines"""
+        if p[1] not in self.file_params:
+            print(f"File param error: Unknown parameter '{p[1]}' at line {p.lineno(1)}")
+        p[0] = (p[1], int(p[2]))
 
     ## String rules
     # String rule
