@@ -11,7 +11,7 @@ class CBLex(object):
                        "DIVIDE", "FLOAT", "HEX", "ID", 
                        "MINUS", "MINUSMINUS", "MODULO", 
                        "NEWLINE", "POWER", "PLUS", 
-                       "PLUSPLUS", "TIMES", "WHITESPACE"]
+                       "PLUSPLUS", "STRING", "TIMES", "WHITESPACE"]
 
         # Add CAPS Keywords to our token list
         self.tokens = self.tokens + [r.upper() for r in self.reserved]
@@ -44,6 +44,10 @@ class CBLex(object):
         r"[a-zA-Z_][a-zA-Z_0-9]*"
         # If a keyword, categorize as such else ID
         t.type = t.value.upper() if t.value in self.reserved else "ID"
+        return t
+
+    def t_STRING(self, t):
+        r"(\"((\\.)|[^\"\n])*\")|('((\\.)|[^'\n])*')"
         return t
     
     # Comment token

@@ -1,5 +1,14 @@
 import ply.yacc as yacc
 
+class CBDiagnostic(object):
+    def __init__(self, token, col, state, message=None):
+        self.token = token
+        self.lineno = token.lineno
+        self.col = col
+        self.state = state
+        self.message = f"Syntax error at line {token.lineno} column {col}. Unexpected {token.type} symbol {repr(token.value)} in state {state}" if message is None else message
+        self.label = ""
+
 class CBParse(object):
     def __init__(self, lexer):
         self.lexer = lexer
@@ -7,6 +16,7 @@ class CBParse(object):
         self.parser = yacc.yacc(module=self)
 
         self.data = None
+        self.diagnostics: list[CBDiagnostic] = []
 
     ### Parser rules
     ## File type rules -- Top level rules
@@ -18,8 +28,7 @@ class CBParse(object):
     ## Error handling rule for unexpected tokens before `DIR`
     def p_unexpected_start(self, p):
         """cbscript : generic script"""
-        p[0] = ("cbscript", p[2])
-        print("Syntax error: 'DIR' should be the first token in the file.")
+        p[0] = ("cbscript", p[2], "'dir' should be the first keyword in the file")
 
     #def p_cblib(self, p):
         #"""cblib : lib"""
@@ -28,11 +37,39 @@ class CBParse(object):
     ## Program type rules
     # Script rules
     def p_script(self, p):
-        """script : DIR ID newlines DESC ID optnewlines"""
+        """script : dir optdesc"""
         p[0] = {
-            "DIR": p[2],
-            "DESC": p[5]
+            "DIR": p[1],
+            "DESC": p[2]
         }
+
+    def p_dir(self, p):
+        """dir : DIR string optnewlines"""
+        p[0] = p[2]
+
+    def p_dir_error(self, p):
+        """dir : DIR error optnewlines"""
+        p[0] = "No output directroy"
+        self.diagnostics[-1].label = "Expected a string"
+
+    def p_optdesc(self, p):
+        """optdesc : DESC string optnewlines
+                    | empty"""
+        if len(p) < 4:
+            p[0] = "No Description"
+        else:
+            p[0] = p[2]
+
+    def p_optdesc_error(self, p):
+        """optdesc : DESC error optnewlines"""
+        p[0] = "No Description"
+        self.diagnostics[-1].label = "Expected a string"
+
+    ## String rules
+    # String rule
+    def p_string(self, p):
+        """string : STRING"""
+        p[0] = p[1][1:-1]
 
     ## Number rules
     # Number rule
@@ -66,23 +103,27 @@ class CBParse(object):
         p[0] = str(-float(p[2]))
 
     ## MISC rules
+    # Newline rule
     def p_newlines(self, p):
         """newlines : newlines NEWLINE
                     | NEWLINE"""
         p[0] = None
 
-    def p_optnewlines(self, p):
+    # Optional newline rule
+    def p_optnewlines(self, _):
         """optnewlines : newlines
                         | empty"""
         pass
 
-    def p_generic(self, p):
+    # Standalone token rule
+    def p_generic(self, _):
         """generic : ID
                     | newlines
                     | number"""
         pass
 
-    def p_empty(self, p):
+    # Empty rule
+    def p_empty(self, _):
         """empty :"""
         pass
 
@@ -91,7 +132,9 @@ class CBParse(object):
         if p is None:
             print("Syntax error: unexpected End of File")
         else:
-            print(f"Syntax error at line {p.lineno} column {self.lexer.find_column(self.data, p)}. Unexpected {p.type}  symbol {repr(p.value)} in state {self.parser.state}")
+            self.diagnostics.append(CBDiagnostic(p, self.lexer.find_column(self.data, p), self.parser.state))
+            print(self.diagnostics[-1].message)
+            #print(f"Syntax error at line {p.lineno} column {self.lexer.find_column(self.data, p)}. Unexpected {p.type} symbol {repr(p.value)} in state {self.parser.state}")
 
     ### Parser Functions
     def parse(self, data, debug=0):
