@@ -1,3 +1,6 @@
+parsetab.py
+
+*.out
 *.cblib
 *.cbs
 .env

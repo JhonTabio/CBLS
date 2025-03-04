@@ -1,33 +1,42 @@
 from ply.lex import lex
 
 class CBLex(object):
-    # Reserved Keywords
-    reserved = {"dir", "desc", "import"}
-    
-    # Recognized tokens
-    tokens = ["BINARY", "COMMENT", "DECIMAL", "DIVIDE", "FLOAT", "HEX", "ID", "MINUS", "MINUSMINUS", "MODULO", "NEWLINE", "POWER", "PLUS", "PLUSPLUS", "TIMES", "WHITESPACE"]
-    
-    # Add CAPS Keywords to our token list
-    tokens = tokens + [r.upper() for r in reserved]
-    
-    ### Ignored Tokens
-    t_ignore = '\r'
+    # Build the lexer - Build once!
+    def __init__(self, **kwargs):
+        # Reserved Keywords
+        self.reserved = {"dir", "desc", "import"}
 
-    ### Simple tokens
-    ## Arithmetic Operator tokens
-    t_PLUS = r"\+"
-    t_PLUSPLUS = r"\+\+"
-    t_MINUS = r"-"
-    t_MINUSMINUS = r"--"
-    t_TIMES = r"\*"
-    t_DIVIDE = r"/"
-    t_MODULO = r"%"
-    t_POWER = r"\^"
+        # Recognized tokens
+        self.tokens = ["BINARY", "COMMENT", "DECIMAL", 
+                       "DIVIDE", "FLOAT", "HEX", "ID", 
+                       "MINUS", "MINUSMINUS", "MODULO", 
+                       "NEWLINE", "POWER", "PLUS", 
+                       "PLUSPLUS", "TIMES", "WHITESPACE"]
 
-    ## Numerical tokens
-    t_DECIMAL = r"\d+"
-    t_FLOAT = r"\d+\.\d+"
-    
+        # Add CAPS Keywords to our token list
+        self.tokens = self.tokens + [r.upper() for r in self.reserved]
+
+        ### Ignored Tokens
+        self.t_ignore = '\r'
+
+        ### Simple tokens
+        ## Arithmetic Operator tokens
+        self.t_PLUS = r"\+"
+        self.t_PLUSPLUS = r"\+\+"
+        self.t_MINUS = r"-"
+        self.t_MINUSMINUS = r"--"
+        self.t_TIMES = r"\*"
+        self.t_DIVIDE = r"/"
+        self.t_MODULO = r"%"
+        self.t_POWER = r"\^"
+
+        ## Numerical tokens
+        self.t_DECIMAL = r"\d+"
+        self.t_FLOAT = r"\d+\.\d+"
+
+        # Uses reflections to interpret this file
+        self.lexer = lex(module=self, **kwargs)
+
     ### Complex tokens with action code
     ## Standard tokens
     # General token
@@ -73,6 +82,7 @@ class CBLex(object):
         t.value = str(int(t.value, 16))
         return t
     
+    ### Lexer functions
     # Compute column.
     #     input is the input text string
     #     token is a token instance
@@ -80,17 +90,13 @@ class CBLex(object):
         line_start = input.rfind('\n', 0, token.lexpos) + 1
         return (token.lexpos - line_start) + 1
 
-    # Build the lexer - Build once!
-    def build(self, **kwargs):
-        # Uses reflections to interpret this file
-        self.lexer = lex(module=self, **kwargs)
-
     # Test the lexer
     def test(self, string):
         self.lexer.input(string)
 
         while True:
              token = self.lexer.token()
+
              if not token:
                  break
 
