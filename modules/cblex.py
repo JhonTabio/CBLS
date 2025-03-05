@@ -4,7 +4,33 @@ class CBLex(object):
     # Build the lexer - Build once!
     def __init__(self, **kwargs):
         # Reserved Keywords
-        self.reserved = {"dir", "desc", "import"}
+        self.reserved = {
+            # General keywords
+            "case", "default", "define", "desc", "dir", "do", "end", "for",
+            "function", "if", "import", "in", "name", "return",
+            "switch", "then", "unless", "while", "with",
+
+            # Boolean keywords
+            "false", "true"
+
+            # Section keywords
+            "clock", "macros", "reset",
+
+            # World space alignment keywords
+            "align", "as", "at", "eyes", "facing", "feet", "here",
+            "move", "overworld", "rotated", "the_end", "the_nether",
+
+            # Command keywords
+            "actionbar", "create", "tell", "title", "subtitle",
+
+            # Data types
+            "array", "block", "block_data", "block_tag", "entity", "entity_tag",
+            "item_tag", "predicate"
+
+            # Stack operations
+            "pop", "push"
+
+        }
 
         # Recognized tokens
         self.tokens = ["BINARY", "COMMENT", "DECIMAL", 

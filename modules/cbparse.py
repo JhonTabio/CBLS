@@ -36,7 +36,7 @@ class CBParse(object):
     ## Program type rules
     # Script rules
     def p_script(self, p):
-        """script : dir optdesc"""
+        """script : dir optdesc file_params"""
         p[0] = {
             "DIR": p[1],
             "DESC": p[2]
@@ -44,18 +44,18 @@ class CBParse(object):
 
     # Dir rules
     def p_dir(self, p):
-        """dir : DIR string optnewlines"""
+        """dir : DIR string newlines"""
         p[0] = p[2]
 
     def p_dir_error(self, p):
-        """dir : DIR error optnewlines"""
+        """dir : DIR error newlines"""
         p[0] = "No output directroy"
         self.diagnostics[-1].label = "Expected a string for dir"
         self.parser.errok()
 
     # Desc rules
     def p_optdesc(self, p):
-        """optdesc : DESC string optnewlines
+        """optdesc : DESC string newlines
                     | empty"""
         if len(p) < 4:
             p[0] = "No Description"
@@ -63,7 +63,7 @@ class CBParse(object):
             p[0] = p[2]
 
     def p_optdesc_error(self, p):
-        """optdesc : DESC error optnewlines"""
+        """optdesc : DESC error newlines"""
         p[0] = "No Description"
         self.diagnostics[-1].label = "Expected a string for desc"
         self.parser.errok()
@@ -84,6 +84,23 @@ class CBParse(object):
         if p[1] not in self.file_params:
             print(f"File param error: Unknown parameter '{p[1]}' at line {p.lineno(1)}")
         p[0] = (p[1], int(p[2]))
+
+    def p_file_param_error(self, p):
+        """file_param : ID error newlines"""
+        if p[1] not in self.file_params:
+            print(f"File param error: Unknown parameter '{p[1]}' at line {p.lineno(1)}")
+        p[0] = (p[1], int(1000))
+        self.parser.errok()
+
+    ## Section rules
+    def p_section(self, p):
+        """section : reset_section"""
+        p[0] = p[1]
+
+    # Reset rule - Entry point
+    def p_reset_section(self, p):
+        """reset_section : RESET newlines ID newlines END"""
+        pass
 
     ## String rules
     # String rule
@@ -162,11 +179,15 @@ class CBParse(object):
                     skip += 1
 
                 self.parser.restart() # Don't really think a reset is needed knowing this fires at state 0
+                self.parser.errok()
 
                 p.lexer.input(p.lexer.lexdata) # Reset lexer tokens
                 p.lexer.lineno = 1 # Reset lexer line number
                 for _ in range(skip + 1): # Skip n + 1 to include the first error token we missed
                     token = self.parser.token()
+            else:
+                pass
+                #self.parser.token() # Skip errorneous token
 
     ### Parser Functions
     def parse(self, data, debug=0):
