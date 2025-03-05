@@ -1,13 +1,16 @@
 import ply.yacc as yacc
 
 class CBDiagnostic(object):
-    def __init__(self, token, col, state, message=None):
+    def __init__(self, token, col, state, expected, message=None):
         self.token = token
         self.lineno = token.lineno
         self.col = col
         self.state = state
-        self.message = f"Syntax error at line {token.lineno} column {col}. Unexpected {token.type} symbol {repr(token.value)} in state {state}" if message is None else message
+        self.message = f"Syntax error at line {token.lineno - 1} column {col - 1}. Unexpected {token.type} symbol {repr(token.value)} in state {state}. Expected {expected}" if message is None else message
         self.label = ""
+
+    def __str__(self):
+        return self.message + "\n" + self.label
 
 class CBParse(object):
     def __init__(self, lexer):
@@ -26,11 +29,6 @@ class CBParse(object):
         """cbscript : script"""
         p[0] = ("cbscript", p[1])
 
-    ## Error handling rule for unexpected tokens before `DIR`
-    def p_unexpected_start(self, p):
-        """cbscript : generic script"""
-        p[0] = ("cbscript", p[2], "'dir' should be the first keyword in the file")
-
     #def p_cblib(self, p):
         #"""cblib : lib"""
         #p[0] = ("cblib", p[1])
@@ -44,6 +42,7 @@ class CBParse(object):
             "DESC": p[2]
         }
 
+    # Dir rules
     def p_dir(self, p):
         """dir : DIR string optnewlines"""
         p[0] = p[2]
@@ -51,8 +50,10 @@ class CBParse(object):
     def p_dir_error(self, p):
         """dir : DIR error optnewlines"""
         p[0] = "No output directroy"
-        self.diagnostics[-1].label = "Expected a string"
+        self.diagnostics[-1].label = "Expected a string for dir"
+        self.parser.errok()
 
+    # Desc rules
     def p_optdesc(self, p):
         """optdesc : DESC string optnewlines
                     | empty"""
@@ -64,7 +65,8 @@ class CBParse(object):
     def p_optdesc_error(self, p):
         """optdesc : DESC error optnewlines"""
         p[0] = "No Description"
-        self.diagnostics[-1].label = "Expected a string"
+        self.diagnostics[-1].label = "Expected a string for desc"
+        self.parser.errok()
 
     # File param rules
     def p_file_params(self, p):
@@ -133,13 +135,6 @@ class CBParse(object):
                         | empty"""
         pass
 
-    # Standalone token rule
-    def p_generic(self, _):
-        """generic : ID
-                    | newlines
-                    | number"""
-        pass
-
     # Empty rule
     def p_empty(self, _):
         """empty :"""
@@ -150,13 +145,36 @@ class CBParse(object):
         if p is None:
             print("Syntax error: unexpected End of File")
         else:
-            self.diagnostics.append(CBDiagnostic(p, self.lexer.find_column(self.data, p), self.parser.state))
+            state = self.parser.state
+            expected = [token for token in self.parser.action[state].keys() if not token == "error"]
+            self.diagnostics.append(CBDiagnostic(p, self.lexer.find_column(self.data, p), self.parser.state, expected))
             print(self.diagnostics[-1].message)
-            #print(f"Syntax error at line {p.lineno} column {self.lexer.find_column(self.data, p)}. Unexpected {p.type} symbol {repr(p.value)} in state {self.parser.state}")
+
+            # Handle 'dir' not first line
+            if self.parser.state == 0: # Initial state, meaning first error we've ran into (Anything but 'dir')
+                skip = 0 # Next parsing pass we skip n amount of error tokens
+                while True:
+                    token = self.parser.token()
+                    if not token: # EOF
+                        return # TODO: Handle never finding 'dir' token
+                    elif token.type == "DIR":
+                        break
+                    skip += 1
+
+                self.parser.restart() # Don't really think a reset is needed knowing this fires at state 0
+
+                p.lexer.input(p.lexer.lexdata) # Reset lexer tokens
+                p.lexer.lineno = 1 # Reset lexer line number
+                for _ in range(skip + 1): # Skip n + 1 to include the first error token we missed
+                    token = self.parser.token()
 
     ### Parser Functions
     def parse(self, data, debug=0):
         self.lexer.lineno = 1 # Reset lexer every parse
 
         self.data = data
-        return self.parser.parse(data, debug=debug, tracking=True)
+        #return self.parser.parse(data, debug=debug, tracking=True)
+        ret =  self.parser.parse(data, debug=debug, tracking=True)
+        for i, d in enumerate(self.diagnostics):
+            print(f"[{i}]: {d}\n")
+        return ret
