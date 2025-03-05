@@ -33,11 +33,16 @@ class CBLex(object):
         }
 
         # Recognized tokens
-        self.tokens = ["BINARY", "COMMENT", "DECIMAL", 
-                       "DIVIDE", "FLOAT", "HEX", "ID", 
-                       "MINUS", "MINUSMINUS", "MODULO", 
-                       "NEWLINE", "POWER", "PLUS", 
-                       "PLUSPLUS", "STRING", "TIMES", "WHITESPACE"]
+        self.tokens = [
+            # General tokens
+            "COMMENT", "ID", "NEWLINE", "STRING", "WHITESPACE",
+
+            # Number tokens
+            "BINARY", "DECIMAL", "FLOAT", "HEX",
+
+            # Arithmetic tokens
+            "DIVIDE", "MINUS", "MINUSMINUS", "MODULO", 
+            "POWER", "PLUS", "PLUSPLUS", "TIMES",]
 
         # Add CAPS Keywords to our token list
         self.tokens = self.tokens + [r.upper() for r in self.reserved]
