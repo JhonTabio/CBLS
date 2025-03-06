@@ -36,7 +36,7 @@ class CBParse(object):
     ## Program type rules
     # Script rules
     def p_script(self, p):
-        """script : dir optdesc file_params"""
+        """script : dir optdesc file_params sections"""
         p[0] = {
             "DIR": p[1],
             "DESC": p[2]
@@ -77,7 +77,7 @@ class CBParse(object):
             p[2][n] = v
             p[0] = p[2]
         else:
-            p[0]
+            p[0] = {}
 
     def p_file_param(self, p):
         """file_param : ID int newlines"""
@@ -93,14 +93,42 @@ class CBParse(object):
         self.parser.errok()
 
     ## Section rules
+    def p_sections(self, p):
+        """sections : section sections optnewlines
+                    | empty"""
+
+    # Section rule
     def p_section(self, p):
-        """section : reset_section"""
+        """section : reset_section
+                    | clock_section"""
         p[0] = p[1]
 
     # Reset rule - Entry point
     def p_reset_section(self, p):
-        """reset_section : RESET newlines ID newlines END"""
+        """reset_section : RESET newlines code_blocks END newlines"""
         pass
+
+    def p_reset_section_error(self, p):
+        """reset_section : RESET error END newlines"""
+        self.parser.errok()
+        pass
+
+    # Clock rule - Update point
+    def p_clock_section(self, p):
+        """clock_section : CLOCK ID newlines code_blocks END newlines"""
+
+    def p_clock_section_error(self, p):
+        """clock_section : CLOCK error END newlines"""
+        self.parser.errok()
+
+    ## Code block rules
+    def p_code_blocks(self, p):
+        """code_blocks : code_block code_blocks optnewlines
+                        | empty"""
+
+    # Code block rule
+    def p_code_block(self, p):
+        """code_block : COMMAND optnewlines"""
 
     ## String rules
     # String rule

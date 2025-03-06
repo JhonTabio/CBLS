@@ -11,7 +11,7 @@ class CBLex(object):
             "switch", "then", "unless", "while", "with",
 
             # Boolean keywords
-            "false", "true"
+            "false", "true",
 
             # Section keywords
             "clock", "macros", "reset",
@@ -35,7 +35,7 @@ class CBLex(object):
         # Recognized tokens
         self.tokens = [
             # General tokens
-            "COMMENT", "ID", "NEWLINE", "STRING", "WHITESPACE",
+            "COMMAND", "COMMENT", "ID", "NEWLINE", "STRING", "WHITESPACE",
 
             # Number tokens
             "BINARY", "DECIMAL", "FLOAT", "HEX",
@@ -76,13 +76,20 @@ class CBLex(object):
         # If a keyword, categorize as such else ID
         t.type = t.value.upper() if t.value in self.reserved else "ID"
         return t
+    
+    def t_COMMAND(self, t):
+        r"(?m:^\s*\/.+)"
+        t.lexer.lineno += t.value.count('\n')
+        t.value = t.value.strip()
+        return t
 
+    # String token
     def t_STRING(self, t):
         r"(\"((\\.)|[^\"\n])*\")|('((\\.)|[^'\n])*')"
         return t
     
     # Comment token
-    def t_COMMENT(self, t):
+    def t_COMMENT(self, _):
         r"\#.+"
         pass
     
