@@ -143,3 +143,6 @@ class CBLex(object):
                  break
 
              print(token)
+
+    def reset(self):
+        self.lexer.lineno = 1

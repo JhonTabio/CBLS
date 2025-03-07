@@ -126,9 +126,13 @@ class CBParse(object):
         """code_blocks : code_block code_blocks optnewlines
                         | empty"""
 
-    # Code block rule
-    def p_code_block(self, p):
+    # Command code block rule
+    def p_command_code_block(self, p):
         """code_block : COMMAND optnewlines"""
+        # TODO: Validate command
+
+    def p_something_code_block(self, p):
+        """code_block : ID optnewlines"""
 
     ## String rules
     # String rule
@@ -227,3 +231,10 @@ class CBParse(object):
         for i, d in enumerate(self.diagnostics):
             print(f"[{i}]: {d}\n")
         return ret
+
+    def reset(self):
+        self.lexer.reset()
+        self.parser.errok()
+        self.parser.restart()
+        self.data = []
+        self.diagnostics = []
