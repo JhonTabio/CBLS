@@ -2,10 +2,9 @@ from typing import Dict, List
 from pygls.server import LanguageServer
 from pygls.workspace import TextDocument
 from modules.TokenUtils import (
-        Token, 
-        COMMANDS,
-        KEYWORDS,
-        IDENTIFIERS, SPACE)
+    TOKEN_MAPPING,
+    TOKEN_TYPES
+)
 
 class CraftBlockLanguageServer(LanguageServer):
     """
@@ -14,104 +13,49 @@ class CraftBlockLanguageServer(LanguageServer):
         Currently able to highlight keywords and detect '#' tokens
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, lexer, parser, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.tokens: Dict[str, List[Token]] = {}
+        self.lexer = lexer
+        self.parser = parser
+
+        self.tokens: Dict[str, List[int]] = {}
 
 
-    def lex(self, document: TextDocument) -> List[Token]:
+    def lex(self, document: TextDocument):
         """
             Extract tokens from a given document
         """
 
-        res = []
+        data = []
 
-        prev_line, prev_offset = 0, 0
+        prev_line = 0
+        prev_column = 0
 
-        for i, line in enumerate(document.lines):
-            prev_offset = current_offset = 0
-            remaining = len(line)
+        self.lexer.lexer.input(document.source)
 
-            while line:
-                if (match := SPACE.match(line)) is not None: # Skip whitespaces
-                    current_offset += len(match.group(0))
-                    line = line[match.end():]
+        while True:
+            token = self.lexer.lexer.token()
 
-                elif (match := COMMANDS.match(line)) is not None:
-                    command = match.group(0).strip()
-                    line_count = command.count('\n')
+            if not token:
+                 break
 
-                    res.append(
-                        Token(
-                            line=i - prev_line + line_count,
-                            offset = current_offset - prev_offset,
-                            text=command
-                            )
-                        )
-
-                    line = line[match.end():]
-                    prev_offset = current_offset
-                    prev_line = i
-                    current_offset += len(command)
-
-                elif (match := IDENTIFIERS.match(line)) is not None:
-                    identified_text = match.group(0)
-
-                    res.append(
-                        Token(
-                            line=i - prev_line,
-                            offset = current_offset - prev_offset,
-                            text=identified_text
-                            )
-                        )
-
-                    line = line[match.end():]
-                    prev_offset = current_offset
-                    prev_line = i
-                    current_offset += len(identified_text)
-
+            if (token_type := TOKEN_MAPPING.get(token.type, None)) is None:
+                if token.value not in self.lexer.reserved:
+                     continue
                 else:
-                    raise RuntimeError(f"Could not match {line!r}")
+                    token_type = "keyword"
 
-                if (n := len(line)) == remaining:
-                    raise RuntimeError("Managed our way to an infinite loop")
-                else:
-                    remaining = n
-        return res
+            line = token.lineno - 1
+            column = self.lexer.find_column(document.source, token) - 1
 
-    def process_tokens(self, tokens: List[Token]):
-        """
-            Process all of our tokens, provide modifier context
-        """
-        def prev(idx):
-            """Get the previous token, if possible"""
-            if idx < 0:
-                return None
+            # LSP uses relative positioning
+            delta_line = line - prev_line
+            delta_column = column - prev_column if delta_line == 0 else column
 
-            return tokens[idx - 1]
+            data.extend([delta_line, delta_column, len(token.value), TOKEN_TYPES.index(token_type), 0])
 
-        def next(idx):
-            """Get the next token, if possible"""
-            if idx >= len(tokens) - 1:
-                return None
+            prev_line = line
+            prev_column = column
 
-            return tokens[idx + 1]
-
-        for idx, token in enumerate(tokens):
-            if token.text in KEYWORDS:
-                token.token_type = "keyword"
-            elif token.text[0] == '/':
-                token.token_type = "command"
-            else:
-                token.token_type = "variable"
-
-    def parse(self, document: TextDocument):
-        """
-            Parse a given document, extracting and retrieving context for 
-            tokens and storing them
-        """
-        tokens = self.lex(document)
-        self.process_tokens(tokens)
-        self.tokens[document.uri] = tokens
-
+        self.tokens[document.uri] = data

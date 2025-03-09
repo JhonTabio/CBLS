@@ -9,10 +9,13 @@ from lsprotocol.types import (
     TEXT_DOCUMENT_DID_CHANGE, TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL
     )
 from modules.CraftBlockLanguageServer import CraftBlockLanguageServer
+from modules.CraftBlockLexer import CBLex
+from modules.CraftBlockParser import CBParse
 from modules.TokenUtils import TokenModifier, TOKEN_TYPES
-from operator import or_
 
-server = CraftBlockLanguageServer("cbls", "v0.1")
+lexer = CBLex()
+parser = CBParse(lexer)
+server = CraftBlockLanguageServer(lexer, parser, "cbls", "v0.1")
 
 legend = SemanticTokensLegend(token_types=TOKEN_TYPES, token_modifiers=[m.name for m in TokenModifier if m.name is not None])
 
@@ -21,22 +24,7 @@ async def semantic_tokens(s: CraftBlockLanguageServer, p: SemanticTokensParams) 
     """
         Provides semantic token coloring for syntax highlighting
     """
-
-    data = []
-    tokens = s.tokens.get(p.text_document.uri, [])
-
-    for token in tokens:
-        data.extend(
-            [
-                token.line,
-                token.offset,
-                len(token.text),
-                TOKEN_TYPES.index(token.token_type),
-                reduce(or_, token.token_modifiers, 0),
-            ]
-        )
-
-    return SemanticTokens(data=data)
+    return SemanticTokens(data=s.tokens.get(p.text_document.uri, []))
 
 @server.feature(
     TEXT_DOCUMENT_COMPLETION,
@@ -64,7 +52,7 @@ async def did_open(s: CraftBlockLanguageServer, p: DidOpenTextDocumentParams):
         Handles text when document is opened in the editor
     """
     document = s.workspace.get_text_document(p.text_document.uri)
-    s.parse(document)
+    s.lex(document)
 
 @server.feature(TEXT_DOCUMENT_DID_CHANGE)
 async def did_change(s: CraftBlockLanguageServer, p: DidChangeTextDocumentParams):
@@ -80,7 +68,7 @@ async def did_change(s: CraftBlockLanguageServer, p: DidChangeTextDocumentParams
     #text = p.content_changes[0].text # To retireve what was changed
     lines = text.split('\n')
 
-    s.parse(document)
+    s.lex(document)
 
     diagnostics = []
 

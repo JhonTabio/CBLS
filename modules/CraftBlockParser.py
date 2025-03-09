@@ -200,14 +200,24 @@ class CBParse(object):
         """int : BINARY
                 | DECIMAL
                 | HEX"""
-        p[0] = p[1]
+        if p.slice[1].type == "BINARY":
+            p[0] = str(int(p[1], 2))
+        elif p.slice[1].type == "HEX":
+            p[0] = str(int(p[1], 16))
+        else:
+            p[0] = p[1]
 
     # Negative Integer rules
     def p_int_negative(self, p):
         """int : MINUS BINARY
                 | MINUS DECIMAL
                 | MINUS HEX"""
-        p[0] = str(-int(p[2]))
+        if p.slice[2].type == "BINARY":
+            p[0] = str(int(p[2], 2))
+        elif p.slice[2].type == "HEX":
+            p[0] = str(int(p[2], 16))
+        else:
+            p[0] = str(-int(p[2]))
 
     # Float rules
     def p_float(self, p):

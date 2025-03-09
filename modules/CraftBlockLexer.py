@@ -39,7 +39,7 @@ class CBLex(object):
             "ID", "NEWLINE", "SEMICOLON", "STRING", "WHITESPACE",
 
             # Number tokens
-            "BINARY", "DECIMAL", "FLOAT", "HEX",
+            "BINARY", "DECIMAL", "FLOAT", "HEX", "JSON",
 
             # Arithmetic tokens
             "DIVIDE", "MINUS", "MINUSMINUS", "MODULO", 
@@ -104,6 +104,26 @@ class CBLex(object):
     def t_STRING(self, t):
         r"(\"((\\.)|[^\"\n])*\")|('((\\.)|[^'\n])*')"
         return t
+
+    ## Numerical tokens
+    # Binary token
+    def t_BINARY(self, t):
+        r"0b[01]+"
+        # Retrieve decimal value from binary
+        #t.value = str(int(t.value, 2))
+        return t
+
+    # Hexadecimal token
+    def t_HEX(self, t):
+        r"0x[a-fA-F0-9]+"
+        # Retrieve decimal value from hex
+        #t.value = str(int(t.value, 16))
+        return t
+
+    # JSON token
+    def t_JSON(self, t):
+        r"-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[e][+-]?\d+)?[f|d] | -?(?:0|[1-9]\d*)[b|s|l]"
+        return t
     
     # Comment token
     def t_COMMENT(self, _):
@@ -125,21 +145,6 @@ class CBLex(object):
     def t_error(self, t):
         print(f"Illegal character '{t.value[0]}' was skipped at {t.lexer.lineno}")
         t.lexer.skip(1)
-
-    ## Numerical tokens
-    # Binary token
-    def t_BINARY(self, t):
-        r"0b[01]+"
-        # Retrieve decimal value from binary
-        t.value = str(int(t.value, 2))
-        return t
-
-    # Hexadecimal token
-    def t_HEX(self, t):
-        r"0x[a-fA-F0-9]+"
-        # Retrieve decimal value from hex
-        t.value = str(int(t.value, 16))
-        return t
     
     ### Lexer functions
     # Compute column.
@@ -160,6 +165,11 @@ class CBLex(object):
                  break
 
              print(token)
+             print(token.type)
+             print(token.value)
+             print(token.lineno)
+             print(token.lexpos)
+             print("------")
 
     def reset(self):
         self.lexer.lineno = 1
