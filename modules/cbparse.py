@@ -131,8 +131,56 @@ class CBParse(object):
         """code_block : COMMAND optnewlines"""
         # TODO: Validate command
 
-    def p_something_code_block(self, p):
-        """code_block : ID optnewlines"""
+    def p_assignment_code_block(self, p):
+        """code_block : assign optnewlines"""
+
+    def p_constant_assignment_code_block(self, p):
+        """code_block : const_assign optnewlines"""
+
+    ## Assignment rules
+    # Assignment rule
+    def p_assignment(self, p):
+        """assign : variable EQUALS expr
+                    | variable PLUS_EQUALS expr
+                    | variable MINUS_EQUALS expr
+                    | variable TIMES_EQUALS expr
+                    | variable MODULO_EQUALS expr"""
+        # TODO: Assignment stuffs
+
+    # Constant assignment rule
+    def p_constant_assignment(self, p):
+        """const_assign : DOLLAR ID EQUALS const_value"""
+        # TODO: Constant assignment stuffs
+
+    ## Variable rules
+    # Variable rule
+    def p_variable_id_variable(self, p):
+        """variable : ID DOT ID"""
+        # TODO: Variable assignment
+
+    def p_variable_id(self, p):
+        """variable : ID"""
+        # TODO: Variable assignment
+
+    def p_variable_constant_integer(self, p):
+        """variable : const_int"""
+
+    ## Arithmetic Rules
+    def p_expression_variable(self, p):
+        """expr : variable"""
+        p[0] = p[1]
+
+    def p_expression_arithmetic(self, p):
+        """expr : expr PLUS expr
+                | expr MINUS expr
+                | expr TIMES expr
+                | expr DIVIDE expr
+                | expr MODULO expr"""
+        # TODO: Do such arithmetics
+
+    def p_expression_power(self, p):
+        """expr : expr POWER int"""
+        # TODO: Apply such powers
 
     ## String rules
     # String rule
@@ -170,6 +218,21 @@ class CBParse(object):
     def p_float_negative(self, p):
         """float : MINUS FLOAT"""
         p[0] = str(-float(p[2]))
+
+    ## Constant rules
+    def p_constant_value(self, p):
+        """const_value : const_ID
+                        | const_string
+                        | const_int"""
+
+    def p_constant_ID(self, p):
+        """const_ID : ID"""
+
+    def p_constant_string(self, p):
+        """const_string : DOLLAR string"""
+
+    def p_constant_integer(self, p):
+        """const_int : int"""
 
     ## MISC rules
     # Newline rule

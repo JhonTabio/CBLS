@@ -35,14 +35,18 @@ class CBLex(object):
         # Recognized tokens
         self.tokens = [
             # General tokens
-            "COMMAND", "COMMENT", "ID", "NEWLINE", "STRING", "WHITESPACE",
+            "COMMAND", "COMMENT", "COLON", "DOLLAR", "DOT",
+            "ID", "NEWLINE", "SEMICOLON", "STRING", "WHITESPACE",
 
             # Number tokens
             "BINARY", "DECIMAL", "FLOAT", "HEX",
 
             # Arithmetic tokens
             "DIVIDE", "MINUS", "MINUSMINUS", "MODULO", 
-            "POWER", "PLUS", "PLUSPLUS", "TIMES",]
+            "POWER", "PLUS", "PLUSPLUS", "TIMES",
+
+            # Assignment tokens
+            "EQUALS", "MINUS_EQUALS", "MODULO_EQUALS", "PLUS_EQUALS", "TIMES_EQUALS"]
 
         # Add CAPS Keywords to our token list
         self.tokens = self.tokens + [r.upper() for r in self.reserved]
@@ -51,6 +55,12 @@ class CBLex(object):
         self.t_ignore = '\r'
 
         ### Simple tokens
+        ## General tokens
+        self.t_DOLLAR = r"\$"
+        self.t_DOT = r"\."
+        self.t_COLON = r"\:"
+        self.t_SEMICOLON = r";"
+
         ## Arithmetic Operator tokens
         self.t_PLUS = r"\+"
         self.t_PLUSPLUS = r"\+\+"
@@ -60,6 +70,13 @@ class CBLex(object):
         self.t_DIVIDE = r"/"
         self.t_MODULO = r"%"
         self.t_POWER = r"\^"
+
+        ## Assignment tokens
+        self.t_EQUALS = r"="
+        self.t_PLUS_EQUALS = r"\+="
+        self.t_MINUS_EQUALS = r"-="
+        self.t_TIMES_EQUALS = r"\*="
+        self.t_MODULO_EQUALS = r"\%="
 
         ## Numerical tokens
         self.t_DECIMAL = r"\d+"
