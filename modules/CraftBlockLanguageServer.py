@@ -59,3 +59,4 @@ class CraftBlockLanguageServer(LanguageServer):
             prev_column = column
 
         self.tokens[document.uri] = data
+        self.lexer.reset()
