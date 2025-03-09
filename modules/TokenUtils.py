@@ -40,19 +40,60 @@ TOKEN_TYPES = [
 ]
 
 TOKEN_MAPPING = {
+    # Variables and Identifiers
     "ID": "variable",
     "FUNCTIONID": "function",
+
+    # String Literals
+    "STRING": "string",
+
+    # Comments
+    "COMMENT": "comment",
+
+    # Numbers
     "DECIMAL": "number",
     "FLOAT": "number",
     "HEX": "number",
     "BINARY": "number",
     "JSON": "number",
-    "EQUALS": "operator",
+
+    # Arithmetic Operators
     "PLUS": "operator",
     "MINUS": "operator",
     "TIMES": "operator",
     "DIVIDE": "operator",
     "MODULO": "operator",
-    "COMMENT": "comment",
-    "STRING": "string"
+    "POWER": "operator",
+    "PLUSPLUS": "operator",
+    "MINUSMINUS": "operator",
+
+    # Assignment Operators
+    "EQUALS": "operator",
+    "MINUS_EQUALS": "operator",
+    "MODULO_EQUALS": "operator",
+    "PLUS_EQUALS": "operator",
+    "TIMES_EQUALS": "operator",
+
+    # General Syntax Tokens
+    "ATID": "type",
+    "COMMAND": "command",
+    "COLON": "operator",
+    "DOLLAR": "operator",
+    "DOT": "operator",
+    "COMMA": "operator",
+    "SEMICOLON": "operator",
+    "TILDE": "operator",
+    "TILDE_EMPTY": "operator",
+    "REF": "operator",
+    "NOT": "operator",
+
+    # Data Types
+    "array": "type",
+    "block": "type",
+    "block_data": "type",
+    "block_tag": "type",
+    "entity": "type",
+    "entity_tag": "type",
+    "item_tag": "type",
+    "predicate": "type",
 }

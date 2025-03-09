@@ -6,7 +6,7 @@ class CBLex(object):
         # Reserved Keywords
         self.reserved = {
             # General keywords
-            "case", "default", "define", "desc", "dir", "do", "end", "for",
+            "case", "default", "define", "desc", "dir", "do", "end", "else", "for",
             "function", "if", "import", "in", "name", "return",
             "switch", "then", "unless", "while", "with",
 
@@ -35,8 +35,8 @@ class CBLex(object):
         # Recognized tokens
         self.tokens = [
             # General tokens
-            "COMMAND", "COMMENT", "COLON", "DOLLAR", "DOT",
-            "ID", "NEWLINE", "SEMICOLON", "STRING", "WHITESPACE",
+            "ATID", "COMMA", "COMMAND", "COMMENT", "COLON", "DOLLAR", "DOT",
+            "ID", "NEWLINE", "NOT", "REF", "SEMICOLON", "STRING", "TILDE", "TILDE_EMPTY", "WHITESPACE",
 
             # Number tokens
             "BINARY", "DECIMAL", "FLOAT", "HEX", "JSON",
@@ -58,8 +58,12 @@ class CBLex(object):
         ## General tokens
         self.t_DOLLAR = r"\$"
         self.t_DOT = r"\."
+        self.t_COMMA = r"\,"
         self.t_COLON = r"\:"
         self.t_SEMICOLON = r";"
+        self.t_TILDE = r"~"
+        self.t_REF = r"&"
+        self.t_NOT = r"!"
 
         ## Arithmetic Operator tokens
         self.t_PLUS = r"\+"
@@ -93,11 +97,21 @@ class CBLex(object):
         # If a keyword, categorize as such else ID
         t.type = t.value.upper() if t.value in self.reserved else "ID"
         return t
+
+    def t_ATID(self, t):
+        r"@[A-Za-z_][A-Za-z0-9_]*"
+        #t.value = t.value[1:]
+        return t
     
     def t_COMMAND(self, t):
         r"(?m:^\s*\/.+)"
         t.lexer.lineno += t.value.count('\n')
         t.value = t.value.strip()
+        return t
+
+    def t_TILDE_EMPTY(self, t):
+        r"~[ \t]"
+        t.value = "~"
         return t
 
     # String token
