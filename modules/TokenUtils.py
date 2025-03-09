@@ -64,8 +64,8 @@ TOKEN_MAPPING = {
     "DIVIDE": "operator",
     "MODULO": "operator",
     "POWER": "operator",
-    "PLUSPLUS": "operator",
-    "MINUSMINUS": "operator",
+    "PLUS_PLUS": "operator",
+    "MINUS_MINUS": "operator",
 
     # Assignment Operators
     "EQUALS": "operator",
@@ -73,6 +73,13 @@ TOKEN_MAPPING = {
     "MODULO_EQUALS": "operator",
     "PLUS_EQUALS": "operator",
     "TIMES_EQUALS": "operator",
+
+    # Comparison Operators
+    "EQUALS_EQUALS": "operator",
+    "GREATER": "operator",
+    "GREATER_EQUALS": "operator",
+    "LESS": "operator",
+    "LESS_EQUALS": "operator",
 
     # General Syntax Tokens
     "ATID": "type",

@@ -1,4 +1,3 @@
-from functools import reduce
 from lsprotocol.types import (
     CompletionItem, CompletionParams, CompletionOptions,
     Diagnostic, DiagnosticSeverity,
@@ -53,6 +52,7 @@ async def did_open(s: CraftBlockLanguageServer, p: DidOpenTextDocumentParams):
     """
     document = s.workspace.get_text_document(p.text_document.uri)
     s.lex(document)
+    s.parse(document)
 
 @server.feature(TEXT_DOCUMENT_DID_CHANGE)
 async def did_change(s: CraftBlockLanguageServer, p: DidChangeTextDocumentParams):
@@ -69,23 +69,7 @@ async def did_change(s: CraftBlockLanguageServer, p: DidChangeTextDocumentParams
     lines = text.split('\n')
 
     s.lex(document)
-
-    diagnostics = []
-
-    for i, line in enumerate(lines):
-        if '#' not in line:
-         continue
-        
-        index = line.rindex('#')
-        d = Diagnostic(
-                range=Range(start=Position(i, index), end=Position(i, len(line))), 
-                message=f"Found '#' in pos {index} in line {i + 1}", 
-                severity=DiagnosticSeverity.Warning, 
-                source="cbls")
-        diagnostics.append(d)
-    
-    s.publish_diagnostics(uri, diagnostics)
-
+    s.parse(document)
 
 if __name__ == "__main__":
     server.start_io()

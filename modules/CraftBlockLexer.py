@@ -42,11 +42,14 @@ class CBLex(object):
             "BINARY", "DECIMAL", "FLOAT", "HEX", "JSON",
 
             # Arithmetic tokens
-            "DIVIDE", "MINUS", "MINUSMINUS", "MODULO", 
-            "POWER", "PLUS", "PLUSPLUS", "TIMES",
+            "DIVIDE", "MINUS", "MINUS_MINUS", "MODULO", 
+            "POWER", "PLUS", "PLUS_PLUS", "TIMES",
 
             # Assignment tokens
-            "EQUALS", "MINUS_EQUALS", "MODULO_EQUALS", "PLUS_EQUALS", "TIMES_EQUALS"]
+            "EQUALS", "MINUS_EQUALS", "MODULO_EQUALS", "PLUS_EQUALS", "TIMES_EQUALS",
+
+            # Comparison tokens
+            "EQUALS_EQUALS", "GREATER", "GREATER_EQUALS", "LESS", "LESS_EQUALS"]
 
         # Add CAPS Keywords to our token list
         self.tokens = self.tokens + [r.upper() for r in self.reserved]
@@ -67,9 +70,9 @@ class CBLex(object):
 
         ## Arithmetic Operator tokens
         self.t_PLUS = r"\+"
-        self.t_PLUSPLUS = r"\+\+"
+        self.t_PLUS_PLUS = r"\+\+"
         self.t_MINUS = r"-"
-        self.t_MINUSMINUS = r"--"
+        self.t_MINUS_MINUS = r"--"
         self.t_TIMES = r"\*"
         self.t_DIVIDE = r"/"
         self.t_MODULO = r"%"
@@ -81,6 +84,13 @@ class CBLex(object):
         self.t_MINUS_EQUALS = r"-="
         self.t_TIMES_EQUALS = r"\*="
         self.t_MODULO_EQUALS = r"\%="
+
+        ## Comparison tokens
+        self.t_EQUALS_EQUALS = r"=="
+        self.t_LESS_EQUALS = r"<="
+        self.t_GREATER_EQUALS = r">="
+        self.t_LESS = r"<"
+        self.t_GREATER = r">"
 
         ## Numerical tokens
         self.t_DECIMAL = r"\d+"
@@ -136,7 +146,7 @@ class CBLex(object):
 
     # JSON token
     def t_JSON(self, t):
-        r"-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[e][+-]?\d+)?[f|d] | -?(?:0|[1-9]\d*)[b|s|l]"
+        r"-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?[fFdD] | -?(?:0|[1-9]\d*)[bBsSlL]"
         return t
     
     # Comment token

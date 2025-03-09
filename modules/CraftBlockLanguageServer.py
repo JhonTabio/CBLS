@@ -1,10 +1,8 @@
 from typing import Dict, List
+from lsprotocol.types import Diagnostic, DiagnosticSeverity, Position, Range
 from pygls.server import LanguageServer
 from pygls.workspace import TextDocument
-from modules.TokenUtils import (
-    TOKEN_MAPPING,
-    TOKEN_TYPES
-)
+from modules.TokenUtils import TOKEN_MAPPING, TOKEN_TYPES
 
 class CraftBlockLanguageServer(LanguageServer):
     """
@@ -60,3 +58,23 @@ class CraftBlockLanguageServer(LanguageServer):
 
         self.tokens[document.uri] = data
         self.lexer.reset()
+
+    def parse(self, document: TextDocument):
+        """
+            Extract syntactical meaning from a given document
+        """
+
+        self.parser.parse(document.source)
+
+        diagnostics: list[Diagnostic] = []
+
+        for d in self.parser.diagnostics:
+            diag = Diagnostic(
+                    range=Range(start=Position(d.lineno, d.col), end=Position(d.lineno, d.col + len(d.token.value))), 
+                    message=d.message, 
+                    severity=DiagnosticSeverity.Error, 
+                    source="cbls")
+
+            diagnostics.append(diag)
+        
+        self.publish_diagnostics(document.uri, diagnostics)

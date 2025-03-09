@@ -3,10 +3,10 @@ import ply.yacc as yacc
 class CBDiagnostic(object):
     def __init__(self, token, col, state, expected, message=None):
         self.token = token
-        self.lineno = token.lineno
-        self.col = col
+        self.lineno = token.lineno - 1
+        self.col = col - 1
         self.state = state
-        self.message = f"Syntax error at line {token.lineno - 1} column {col - 1}. Unexpected {token.type} symbol {repr(token.value)} in state {state}. Expected {expected}" if message is None else message
+        self.message = f"Syntax error at line {token.lineno} column {col}. Unexpected {token.type} symbol {repr(token.value)} in state {state}. Expected {expected}" if message is None else message
         self.label = ""
 
     def __str__(self):
@@ -286,8 +286,9 @@ class CBParse(object):
                 self.parser.restart() # Don't really think a reset is needed knowing this fires at state 0
                 self.parser.errok()
 
+                self.lexer.reset()
                 p.lexer.input(p.lexer.lexdata) # Reset lexer tokens
-                p.lexer.lineno = 1 # Reset lexer line number
+                #p.lexer.lineno = 1 # Reset lexer line number
                 for _ in range(skip + 1): # Skip n + 1 to include the first error token we missed
                     token = self.parser.token()
             else:
@@ -296,7 +297,8 @@ class CBParse(object):
 
     ### Parser Functions
     def parse(self, data, debug=0):
-        self.lexer.lineno = 1 # Reset lexer every parse
+        #self.lexer.lineno = 1 # Reset lexer every parse
+        #self.reset()
 
         self.data = data
         #return self.parser.parse(data, debug=debug, tracking=True)
