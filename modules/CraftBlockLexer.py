@@ -6,9 +6,10 @@ class CBLex(object):
         # Reserved Keywords
         self.reserved = {
             # General keywords
-            "case", "default", "define", "desc", "dir", "do", "end", "else", "for",
-            "function", "if", "import", "in", "name", "return",
-            "switch", "then", "unless", "while", "with",
+            "and", "by", "case", "default", "define", "desc", "dir", "do", "end", "else", "for",
+            "function", "if", "import", "in", "keys", "loot_table", "name", "not", "or",
+            "recipe", "remove", "return", "result", "sucess", "shaped",
+            "switch", "then", "to", "unless", "while", "with",
 
             # Boolean keywords
             "false", "true",
@@ -21,22 +22,22 @@ class CBLex(object):
             "move", "overworld", "rotated", "the_end", "the_nether",
 
             # Command keywords
-            "actionbar", "create", "tell", "title", "subtitle",
+            "advancement", "actionbar", "create", "tell", "title", "subtitle",
 
             # Data types
             "array", "block", "block_data", "block_tag", "entity", "entity_tag",
-            "item_tag", "predicate"
+            "item_tag", "item_modifier", "predicate",
 
             # Stack operations
             "pop", "push"
-
         }
 
         # Recognized tokens
         self.tokens = [
             # General tokens
             "ATID", "COMMA", "COMMAND", "COMMENT", "COLON", "DOLLAR", "DOT",
-            "ID", "NEWLINE", "NOT", "REF", "SEMICOLON", "STRING", "TILDE", "TILDE_EMPTY", "WHITESPACE",
+            "ID", "LBRACKET", "LCURLY", "LPAREN", "NEWLINE", "NEGATION", "RBRACKET", "RCURLY", "RPAREN",
+            "REF", "SEMICOLON", "STRING", "TILDE", "TILDE_EMPTY", "WHITESPACE",
 
             # Number tokens
             "BINARY", "DECIMAL", "FLOAT", "HEX", "JSON",
@@ -66,7 +67,13 @@ class CBLex(object):
         self.t_SEMICOLON = r";"
         self.t_TILDE = r"~"
         self.t_REF = r"&"
-        self.t_NOT = r"!"
+        self.t_NEGATION = r"!"
+        self.t_LPAREN = r"\("
+        self.t_RPAREN = r"\)"
+        self.t_LBRACKET = r"\["
+        self.t_RBRACKET = r"\]"
+        self.t_LCURLY = r"\{"
+        self.t_RCURLY = r"\}"
 
         ## Arithmetic Operator tokens
         self.t_PLUS = r"\+"

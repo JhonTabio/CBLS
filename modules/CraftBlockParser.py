@@ -36,7 +36,7 @@ class CBParse(object):
     ## Program type rules
     # Script rules
     def p_script(self, p):
-        """script : dir optdesc file_params sections"""
+        """script : dir optdesc file_params top_level_blocks"""
         p[0] = {
             "DIR": p[1],
             "DESC": p[2]
@@ -92,6 +92,20 @@ class CBParse(object):
         p[0] = (p[1], int(1000))
         self.parser.errok()
 
+    ## Top level rules
+    # Top level block rule
+    def p_top_level_block(self, p):
+        """top_level_block : import
+                            | selector_define_block
+                            | sections"""
+
+    def p_top_level_blocks(self, p):
+        """top_level_blocks : top_level_block top_level_blocks optnewlines
+                            | empty"""
+
+    def p_import(self, p):
+        """import : IMPORT ID optnewlines"""
+
     ## Section rules
     def p_sections(self, p):
         """sections : section sections optnewlines
@@ -137,6 +151,102 @@ class CBParse(object):
     def p_constant_assignment_code_block(self, p):
         """code_block : const_assign optnewlines"""
 
+    def p_create_code_block(self, p):
+        """code_block : variable EQUALS create_block optnewlines"""
+
+    def p_define_name_code_block(self, p):
+        """code_block : DEFINE NAME ID EQUALS string optnewlines"""
+
+    def p_selector_block(self, p):
+        """code_block : selector_assign
+                        | selector_define_block"""
+    
+    ## Create rules
+    # Create ATID
+    def p_ATID_create(self, p):
+        """create_block : CREATE ATID"""
+
+    def p_ATID_index_create(self, p):
+        """create_block : CREATE ATID LBRACKET const_value RBRACKET"""
+
+    ## Full Selector
+    # Full Selector
+    def p_full_selector(self, p):
+        """full_selector : ATID"""
+
+    def p_full_selector_qualifiers(self, p):
+        """full_selector : ATID LBRACKET const_int RBRACKET
+                        | ATID LBRACKET qualifiers RBRACKET"""
+
+    ## Qualifiers
+    def p_qualifier_single(self, p):
+        """qualifiers : qualifier
+                        | empty"""
+
+    def p_qualifier_list(self, p):
+        """qualifiers : qualifiers COMMA qualifier
+                        | qualifiers AND qualifier"""
+
+    def p_qualifier_empty(self, p):
+        """qualifier : ID EQUALS"""
+
+    def p_qualifier_not(self, p):
+        """qualifier : ID EQUALS NOT ID"""
+
+    def p_qualifier_id(self, p):
+        """qualifier : ID"""
+
+    def p_qualifier_builtin(self, p):
+        """qualifier : ID EQUALS const_int DOT DOT const_int
+                    | ID EQUALS DOT DOT const_int
+                    | ID EQUALS const_int DOT DOT"""
+
+    def p_qualifier_binop(self, p):
+        """qualifier : ID EQUALS const_int
+                     | ID EQUALS ID
+                     | NAME EQUALS ID
+                     | ID EQUALS_EQUALS const_int
+                     | ID GREATER_EQUALS const_int
+                     | ID LESS_EQUALS const_int
+                     | ID GREATER const_int
+                     | ID LESS const_int
+                     | ID EQUALS json_object"""
+
+    ## Selector Rules
+    def p_selector_define(self, p):
+        """selector_define_block : DEFINE ATID EQUALS full_selector newlines selector_definition END
+                                | DEFINE ATID COLON full_selector newlines selector_definition END
+                                | DEFINE ATID COLON uuid LPAREN full_selector RPAREN newlines selector_definition END"""
+
+    def p_selector_definition(self, p):
+        """selector_definition : selector_item newlines selector_definition
+                                | empty"""
+
+    def p_selector_pointer(self, p):
+        """selector_item : ID EQUALS full_selector
+                            | ID COLON full_selector"""
+
+    def p_selector_item_path(self, p):
+        """selector_item : ID EQUALS data_path data_type
+                            | ID COLON data_path data_type"""
+
+    def p_selector_item_vector_path(self, p):
+        """selector_item : LESS ID GREATER EQUALS data_path data_type const_value
+                            | LESS ID GREATER COLON data_path data_type const_value
+                            | LESS ID GREATER EQUALS data_path data_type
+                            | LESS ID GREATER COLON data_path data_type"""
+
+    def p_selector_item_tag(self, p):
+        """selector_item : CREATE json_object"""
+    
+    def p_selector_assignment(self, p):
+        """selector_assign : ATID EQUALS full_selector"""
+
+    ## Advancement rules
+    # Advancement rule
+    def p_advancement(self, p):
+        """advancement : ADVANCEMENT ID json_object"""
+
     ## Assignment rules
     # Assignment rule
     def p_assignment(self, p):
@@ -146,6 +256,11 @@ class CBParse(object):
                     | variable TIMES_EQUALS expr
                     | variable MODULO_EQUALS expr"""
         # TODO: Assignment stuffs
+
+    def p_xcrement(self, p):
+        """assign : variable PLUS_PLUS
+                    | variable MINUS_MINUS"""
+        # TODO: Increment/Decrement stuffs
 
     # Constant assignment rule
     def p_constant_assignment(self, p):
@@ -181,6 +296,81 @@ class CBParse(object):
     def p_expression_power(self, p):
         """expr : expr POWER int"""
         # TODO: Apply such powers
+
+    ## Data rules
+    # Data path rule
+    def p_data_path(self, p):
+        """data_path : ID json_object
+                        | ID
+                        | FACING"""
+
+    def p_data_path_array(self, p):
+        """data_path : ID LBRACKET json_object RBRACKET"""
+
+    def p_data_path_multi(self, p):
+        """data_path : data_path DOT data_path"""
+
+    def p_data_type(self, p):
+        """data_type : ID"""
+
+        expected = ["byte", "double", "float", "int", "long", "short"]
+
+        if p[1] not in expected:
+            self.diagnostics.append(CBDiagnostic(p.slice[1], self.lexer.find_column(self.data, p.slice[1]), self.parser.state, expected))
+
+    ## JSON rules
+    # JSON Object rule
+    def p_json_object(self, p):
+        """json_object : LCURLY optnewlines json_members optnewlines RCURLY"""
+
+    def p_json_members(self, p):
+        """json_members : json_pair COMMA optnewlines json_members
+                        | json_pair
+                        | empty"""
+
+    def p_json_pair(self, p):
+        """json_pair : ID COLON optnewlines json_value
+                        | string COLON optnewlines json_value
+                        | FACING COLON optnewlines json_value
+                        | BLOCK COLON optnewlines json_value
+                        | PREDICATE COLON optnewlines json_value"""
+
+    def p_json_value(self, p):
+        """json_value : DOLLAR ID
+                        | JSON
+                        | number
+                        | string
+                        | json_object
+                        | json_array
+                        | json_literal_array
+                        | TRUE
+                        | FALSE"""
+
+    def p_json_array(self, p):
+        """json_array : LBRACKET optnewlines json_elements optnewlines RBRACKET"""
+
+    def p_json_element(self, p):
+        """json_elements : json_value COMMA optnewlines json_elements
+                            | json_value
+                            | empty"""
+
+    def p_json_literal_array(self, p):
+        """json_literal_array : LBRACKET optnewlines ID SEMICOLON optnewlines json_literal_elements optnewlines RBRACKET"""
+
+        expected = ['b', 'i', 'l']
+
+        if p[3] not in expected:
+            self.diagnostics.append(CBDiagnostic(p.slice[3], self.lexer.find_column(self.data, p.slice[3]), self.parser.state, expected))
+
+    def p_json_literal_elements(self, p):
+        """json_literal_elements : json_literal_value COMMA optnewlines json_literal_elements
+                                    | json_literal_value
+                                    | empty"""
+
+    def p_json_literal_value(self, p):
+        """json_literal_value : DOLLAR ID
+                                | number
+                                | empty"""
 
     ## String rules
     # String rule
@@ -245,6 +435,9 @@ class CBParse(object):
         """const_int : int"""
 
     ## MISC rules
+    # UUID rule
+    def p_uuid(self, p):
+        """uuid : int MINUS int MINUS int MINUS int MINUS int"""
     # Newline rule
     def p_newlines(self, p):
         """newlines : newlines NEWLINE
