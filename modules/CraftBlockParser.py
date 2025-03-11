@@ -132,7 +132,8 @@ class CBParse(object):
     # Section rule
     def p_section(self, p):
         """section : reset_section
-                    | clock_section"""
+                    | clock_section
+                    | function_section"""
         p[0] = p[1]
 
     # Reset rule - Entry point
@@ -152,6 +153,25 @@ class CBParse(object):
     def p_clock_section_error(self, p):
         """clock_section : CLOCK error END newlines"""
         self.parser.errok()
+
+    # Function rule
+    def p_function_section(self, p):
+        """function_section : FUNCTION FUNCTION_ID id_list RPAREN newlines code_blocks END optnewlines"""
+
+    def p_function_section_error(self, p):
+        """function_section : FUNCTION error END"""
+        self.parser.errok()
+
+    def p_id_list(self, p):
+        """id_list : ID COMMA id_list
+                    | ID
+                    | empty"""
+
+    def p_function_call(self, p):
+        """function_call : FUNCTION_ID expr_list RPAREN"""
+
+    def p_function_call_block(self, p):
+        """function_call_block : function_call"""
 
     ## Code block rules
     def p_code_blocks(self, p):
@@ -178,6 +198,9 @@ class CBParse(object):
     def p_selector_block(self, p):
         """code_block : selector_assign optnewlines
                         | selector_define_block optnewlines"""
+
+    def p_function_call_code_block(self, p):
+        """code_block : function_call_block"""
     
     ## Execute rules
     # Execute items
@@ -424,6 +447,11 @@ class CBParse(object):
                     | RESULT NEWLINE COMMAND"""
 
     ## Arithmetic Rules
+    def p_expression_list(self, p):
+        """expr_list : expr_list COMMA expr
+                        | expr
+                        | empty"""
+
     def p_expression_variable(self, p):
         """expr : variable"""
         p[0] = p[1]
@@ -439,6 +467,9 @@ class CBParse(object):
     def p_expression_power(self, p):
         """expr : expr POWER int"""
         # TODO: Apply such powers
+
+    def p_expression_function_call(self, p):
+        """expr : function_call"""
 
     ## Data rules
     # Data path rule

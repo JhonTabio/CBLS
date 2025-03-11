@@ -35,7 +35,7 @@ class CBLex(object):
         # Recognized tokens
         self.tokens = [
             # General tokens
-            "ATID", "COMMA", "COMMAND", "COMMENT", "COLON", "DOLLAR", "DOT",
+            "ATID", "COMMA", "COMMAND", "COMMENT", "COLON", "DOLLAR", "DOT", "FUNCTION_ID",
             "ID", "LBRACKET", "LCURLY", "LPAREN", "NEWLINE", "NEGATION", "RBRACKET", "RCURLY", "RPAREN",
             "REF", "SEMICOLON", "STRING", "TILDE", "TILDE_EMPTY", "WHITESPACE",
 
@@ -109,14 +109,20 @@ class CBLex(object):
     ### Complex tokens with action code
     ## Standard tokens
     # General token
+    def t_FUNCTION_ID(self, t):
+        r"[a-zA-Z_][a-zA-Z0-9_]*\("
+        # Strip the trailing '('
+        t.value = t.value[:-1]
+        return t
+    
     def t_ID(self, t):
-        r"[a-zA-Z_][a-zA-Z_0-9]*"
+        r"[a-zA-Z_][a-zA-Z0-9_]*"
         # If a keyword, categorize as such else ID
         t.type = t.value.upper() if t.value in self.reserved else "ID"
         return t
 
     def t_ATID(self, t):
-        r"@[A-Za-z_][A-Za-z0-9_]*"
+        r"@[a-zA-Z_][a-zA-Z0-9_]*"
         #t.value = t.value[1:]
         return t
     
