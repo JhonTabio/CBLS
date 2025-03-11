@@ -212,7 +212,8 @@ class CBParse(object):
         """code_block : function_call_block
                         | method_call_block
                         | macro_call
-                        | const_assign"""
+                        | const_assign
+                        | with_anon"""
 
     ## Execute rules
     # Execute items
@@ -325,6 +326,7 @@ class CBParse(object):
                         | const_ID
                         | empty"""
 
+    # With rule
     def p_with(self, p):
         """with : WITH newlines with_items"""
 
@@ -340,6 +342,10 @@ class CBParse(object):
         """opt_with_macro : with MACRO
                             | empty"""
 
+    def p_with_anon(self, p):
+        """with_anon : with DO newlines code_blocks END optnewlines"""
+
+    # Macro call rule
     def p_macro_call(self, p):
         """macro_call : DOLLAR FUNCTION_ID macro_call_args"""
 
