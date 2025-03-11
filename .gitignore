@@ -2,7 +2,7 @@ parsetab.py
 
 *.out
 *.cblib
-*.cbs
+*.cbscript
 .env
 *.pyc
 

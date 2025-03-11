@@ -22,6 +22,19 @@ class CBParse(object):
         self.data = None
         self.diagnostics: list[CBDiagnostic] = []
 
+        self.executee = [
+        	"attacker",
+        	"controller",
+        	"leasher",
+        	"origin",
+        	"owner",
+        	"passengers",
+        	"target",
+        	"vehicle"
+        ]
+
+        self.axis = ["x", "y", "z", "xy", "xz", "yz", "xyz"]
+
     ### Parser rules
     ## File type rules -- Top level rules
     # .cbscript files
@@ -166,6 +179,95 @@ class CBParse(object):
         """code_block : selector_assign optnewlines
                         | selector_define_block optnewlines"""
     
+    ## Execute rules
+    # Execute items
+    def p_execute_items(self, p):
+        """execute_items : execute_item execute_items
+                            | empty"""
+
+    # Execute item
+    def p_execute_item(self, p):
+        """execute_item : IF conditionals
+                        | UNLESS conditionals
+                        | AS full_selector"""
+
+    def p_execute_on(self, p):
+        """execute_item : ON ID"""
+
+        if p[2] not in self.executee:
+            self.diagnostics.append(CBDiagnostic(p.slice[2], self.lexer.find_column(self.data, p.slice[2]), self.parser.state, self.executee))
+
+    def p_execute_rotated(self, p):
+        """execute_item : ROTATED full_selector"""
+
+    def p_execute_facing_entity(self, p):
+        """execute_item : FACING full_selector"""
+
+    def p_execute_align(self, p):
+        """execute_item : ALIGN ID"""
+
+        if p[2] not in self.axis:
+            self.diagnostics.append(CBDiagnostic(p.slice[2], self.lexer.find_column(self.data, p.slice[2]), self.parser.state, self.executee))
+
+
+    def p_execute_else_list(self, p):
+        """else_list : else_item else_list
+                        | empty"""
+
+    # Execute else rule
+    def p_execute_else_item(self, p):
+        """else_item : ELSE execute_items newlines code_blocks
+                        | ELSE newlines code_blocks"""
+
+    def p_execute_chain(self, p):
+        """code_block : execute_items newlines code_blocks else_list END optnewlines"""
+
+    def p_execute_inline(self, p):
+        """code_block : execute_items DO code_block
+                        | execute_items THEN code_block"""
+
+    # Execute if rule
+    def p_executre_if(self, p):
+        """code_block : IF const_value newlines code_blocks else_list END optnewlines"""
+
+    # Execute as rule
+    def p_execute_as(self, p):
+        """code_block : AS variable newlines code_blocks else_list END optnewlines
+                        | AS variable LPAREN ATID RPAREN newlines code_blocks else_list END optnewlines"""
+
+    # Execute as do rule
+    def p_execute_as_do(self, p):
+        """code_block : AS variable DO code_block else_list optnewlines
+                        | AS variable LPAREN ATID RPAREN DO code_block optnewlines"""
+    ## Conditional rules
+    # Conditional rule
+    def p_conditional(self, p):
+        """conditional : full_selector
+                        | PREDICATE ID
+                        | expr EQUALS_EQUALS expr
+                        | expr LESS expr
+                        | expr LESS_EQUALS expr
+                        | expr GREATER expr
+                        | expr GREATER_EQUALS expr
+                        | NOT expr
+                        | expr"""
+
+    def p_conditionals(self, p):
+        """conditionals : conditional AND conditionals
+                        | conditional"""
+
+    def p_if_else(self, p):
+        """code_block : IF const_value newlines code_blocks ELSE newlines code_blocks END optnewlines"""
+
+    ## Loop rules
+    # For loop rule
+    def p_for(self, p):
+        """code_block : FOR const_ID IN const_value newlines code_blocks END optnewlines"""
+
+    # While loop rule
+    def p_while(self, p):
+        """code_block : WHILE conditionals newlines code_blocks END optnewlines"""
+
     ## Create rules
     # Create ATID
     def p_ATID_create(self, p):

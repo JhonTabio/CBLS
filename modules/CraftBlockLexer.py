@@ -19,7 +19,7 @@ class CBLex(object):
 
             # World space alignment keywords
             "align", "as", "at", "eyes", "facing", "feet", "here",
-            "move", "overworld", "rotated", "the_end", "the_nether",
+            "move", "on", "overworld", "rotated", "the_end", "the_nether",
 
             # Command keywords
             "advancement", "actionbar", "create", "tell", "title", "subtitle",
