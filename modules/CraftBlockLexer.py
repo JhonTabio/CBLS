@@ -8,7 +8,7 @@ class CBLex(object):
             # General keywords
             "and", "by", "case", "default", "define", "desc", "dir", "do", "end", "else", "for",
             "function", "if", "import", "in", "keys", "loot_table", "name", "not", "or",
-            "recipe", "remove", "return", "result", "sucess", "shaped",
+            "recipe", "remove", "return", "result", "success", "shaped",
             "switch", "then", "to", "unless", "while", "with",
 
             # Boolean keywords

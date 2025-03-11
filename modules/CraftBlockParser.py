@@ -95,9 +95,14 @@ class CBParse(object):
     ## Top level rules
     # Top level block rule
     def p_top_level_block(self, p):
-        """top_level_block : import
+        """top_level_block : advancement
+                            | const_assign optnewlines
+                            | import
+                            | item_modifier
+                            | selector_assign
                             | selector_define_block
-                            | sections"""
+                            | sections
+                            | predicate"""
 
     def p_top_level_blocks(self, p):
         """top_level_blocks : top_level_block top_level_blocks optnewlines
@@ -158,8 +163,8 @@ class CBParse(object):
         """code_block : DEFINE NAME ID EQUALS string optnewlines"""
 
     def p_selector_block(self, p):
-        """code_block : selector_assign
-                        | selector_define_block"""
+        """code_block : selector_assign optnewlines
+                        | selector_define_block optnewlines"""
     
     ## Create rules
     # Create ATID
@@ -214,9 +219,13 @@ class CBParse(object):
 
     ## Selector Rules
     def p_selector_define(self, p):
-        """selector_define_block : DEFINE ATID EQUALS full_selector newlines selector_definition END
-                                | DEFINE ATID COLON full_selector newlines selector_definition END
-                                | DEFINE ATID COLON uuid LPAREN full_selector RPAREN newlines selector_definition END"""
+        """selector_define_block : DEFINE ATID EQUALS full_selector newlines selector_definition END newlines
+                                | DEFINE ATID COLON full_selector newlines selector_definition END newlines
+                                | DEFINE ATID COLON uuid LPAREN full_selector RPAREN newlines selector_definition END newlines"""
+
+    def p_selector_define_error(self, p):
+        """selector_definition : DEFINE error END newlines"""
+        self.parser.errok()
 
     def p_selector_definition(self, p):
         """selector_definition : selector_item newlines selector_definition
@@ -227,7 +236,9 @@ class CBParse(object):
                             | ID COLON full_selector"""
 
     def p_selector_item_path(self, p):
-        """selector_item : ID EQUALS data_path data_type
+        """selector_item : ID EQUALS data_path data_type const_value
+                            | ID COLON data_path data_type const_value
+                            | ID EQUALS data_path data_type
                             | ID COLON data_path data_type"""
 
     def p_selector_item_vector_path(self, p):
@@ -240,12 +251,22 @@ class CBParse(object):
         """selector_item : CREATE json_object"""
     
     def p_selector_assignment(self, p):
-        """selector_assign : ATID EQUALS full_selector"""
+        """selector_assign : ATID EQUALS full_selector optnewlines"""
 
     ## Advancement rules
     # Advancement rule
     def p_advancement(self, p):
-        """advancement : ADVANCEMENT ID json_object"""
+        """advancement : ADVANCEMENT ID json_object optnewlines"""
+
+    ## Predicate rules
+    # Predicate rule
+    def p_predicate(self, p):
+        """predicate : PREDICATE ID json_object optnewlines"""
+
+    ## Item Modifier rules
+    # Item Modifier rule
+    def p_item_modifier(self, p):
+        """item_modifier : ITEM_MODIFIER ID json_object optnewlines"""
 
     ## Assignment rules
     # Assignment rule
@@ -270,7 +291,8 @@ class CBParse(object):
     ## Variable rules
     # Variable rule
     def p_variable_id_variable(self, p):
-        """variable : ID DOT ID"""
+        """variable : ID DOT ID
+                    | full_selector DOT ID"""
         # TODO: Variable assignment
 
     def p_variable_id(self, p):
@@ -279,6 +301,25 @@ class CBParse(object):
 
     def p_variable_constant_integer(self, p):
         """variable : const_int"""
+
+    def p_variable_array(self, p):
+        """variable : ID LBRACKET const_int RBRACKET
+                    | ID LBRACKET expr RBRACKET"""
+
+    def p_variable_array_selector(self, p):
+        """variable : full_selector DOT ID LBRACKET const_int RBRACKET
+                    | full_selector DOT ID LBRACKET expr RBRACKET"""
+
+    def p_variable_ref(self, p):
+        """variable : REF full_selector"""
+
+    def p_variable_storage(self, p):
+        """variable : ID COLON data_path
+                    | COLON data_path"""
+
+    def p_variable_command(self, p):
+        """variable : SUCCESS NEWLINE COMMAND
+                    | RESULT NEWLINE COMMAND"""
 
     ## Arithmetic Rules
     def p_expression_variable(self, p):
@@ -305,7 +346,8 @@ class CBParse(object):
                         | FACING"""
 
     def p_data_path_array(self, p):
-        """data_path : ID LBRACKET json_object RBRACKET"""
+        """data_path : ID LBRACKET json_object RBRACKET
+                        | ID LBRACKET const_int RBRACKET"""
 
     def p_data_path_multi(self, p):
         """data_path : data_path DOT data_path"""
@@ -322,6 +364,10 @@ class CBParse(object):
     # JSON Object rule
     def p_json_object(self, p):
         """json_object : LCURLY optnewlines json_members optnewlines RCURLY"""
+
+    def p_json_object_error(self, p):
+        """json_object : LCURLY error RCURLY"""
+        self.parser.errok()
 
     def p_json_members(self, p):
         """json_members : json_pair COMMA optnewlines json_members
@@ -423,16 +469,45 @@ class CBParse(object):
     def p_constant_value(self, p):
         """const_value : const_ID
                         | const_string
-                        | const_int"""
+                        | const_int
+                        | const_expr"""
 
     def p_constant_ID(self, p):
-        """const_ID : ID"""
+        """const_ID : DOLLAR ID"""
 
     def p_constant_string(self, p):
         """const_string : DOLLAR string"""
 
     def p_constant_integer(self, p):
         """const_int : int"""
+
+    def p_constant_expression(self, p):
+        """const_expr : number
+                        | string
+                        | const_ID"""
+
+    def p_constant_expression_arithmetic(self, p):
+        """const_expr : const_expr PLUS const_expr
+                        | const_expr MINUS const_expr
+                        | const_expr TIMES const_expr
+                        | const_expr DIVIDE const_expr
+                        | const_expr MODULO const_expr"""
+        # TODO: Do such arithmetics
+
+    def p_constant_expression_list(self, p):
+        """const_expr_list : const_expr COMMA optnewlines const_expr_list
+                            | const_expr
+                            | empty"""
+
+    def p_constant_array(self, p):
+        """const_expr : LBRACKET optnewlines const_expr_list optnewlines RBRACKET
+                        | LPAREN optnewlines const_expr_list optnewlines RPAREN"""
+
+    def p_constant_array_element(self, p):
+        """const_expr : const_expr LBRACKET const_expr RBRACKET"""
+
+    def p_constant_expression_variable(self, p):
+        """const_expr_variable : const_expr DOT const_expr"""
 
     ## MISC rules
     # UUID rule

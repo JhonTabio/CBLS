@@ -78,3 +78,4 @@ class CraftBlockLanguageServer(LanguageServer):
             diagnostics.append(diag)
         
         self.publish_diagnostics(document.uri, diagnostics)
+        self.parser.reset()
