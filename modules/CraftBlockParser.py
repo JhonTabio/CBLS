@@ -133,7 +133,8 @@ class CBParse(object):
     def p_section(self, p):
         """section : reset_section
                     | clock_section
-                    | function_section"""
+                    | function_section
+                    | macro_section"""
         p[0] = p[1]
 
     # Reset rule - Entry point
@@ -173,6 +174,13 @@ class CBParse(object):
     def p_function_call_block(self, p):
         """function_call_block : function_call"""
 
+    def p_method_call(self, p):
+        """method_call : full_selector DOT FUNCTION_ID expr_list RPAREN opt_with_macro"""
+
+    def p_method_call_block(self, p):
+        """method_call_block : with method_call
+                                | method_call"""
+
     ## Code block rules
     def p_code_blocks(self, p):
         """code_blocks : code_block code_blocks optnewlines
@@ -190,18 +198,22 @@ class CBParse(object):
         """code_block : const_assign optnewlines"""
 
     def p_create_code_block(self, p):
-        """code_block : variable EQUALS create_block optnewlines"""
+        """code_block : variable EQUALS create_block optnewlines
+                        | create_block optnewlines"""
 
     def p_define_name_code_block(self, p):
         """code_block : DEFINE NAME ID EQUALS string optnewlines"""
 
-    def p_selector_block(self, p):
+    def p_selector_block_code_block(self, p):
         """code_block : selector_assign optnewlines
                         | selector_define_block optnewlines"""
 
     def p_function_call_code_block(self, p):
-        """code_block : function_call_block"""
-    
+        """code_block : function_call_block
+                        | method_call_block
+                        | macro_call
+                        | const_assign"""
+
     ## Execute rules
     # Execute items
     def p_execute_items(self, p):
@@ -299,6 +311,48 @@ class CBParse(object):
     def p_ATID_index_create(self, p):
         """create_block : CREATE ATID LBRACKET const_value RBRACKET"""
 
+    ## Macros 
+    # Macro section
+    def p_macro_section(self, p):
+        """macro_section : MACRO DOLLAR FUNCTION_ID macro_args newlines code_blocks END optnewlines"""
+
+    def p_macro_args(self, p):
+        """macro_args : macro_params RPAREN
+                        | empty"""
+
+    def p_macro_params(self, p):
+        """macro_params : const_ID COMMA macro_params
+                        | const_ID
+                        | empty"""
+
+    def p_with(self, p):
+        """with : WITH newlines with_items"""
+
+    def p_with_items(self, p):
+        """with_items : with_item with_items
+                        | with_item"""
+
+    def p_with_item(self, p):
+        """with_item : DOLLAR LPAREN ID RPAREN EQUALS expr newlines
+                        | DOLLAR LPAREN ID RPAREN EQUALS string newlines"""
+
+    def p_with_macro(self, p):
+        """opt_with_macro : with MACRO
+                            | empty"""
+
+    def p_macro_call(self, p):
+        """macro_call : DOLLAR FUNCTION_ID macro_call_args"""
+
+    def p_macro_call_args(self, p):
+        """macro_call_args : macro_call_params RPAREN
+                            | empty"""
+
+    def p_macro_call_params(self, p):
+        """macro_call_params : macro_call_params COMMA macro_call_params
+                                | macro_call_params
+                                | const_value
+                                | empty"""
+
     ## Full Selector
     # Full Selector
     def p_full_selector(self, p):
@@ -392,6 +446,22 @@ class CBParse(object):
     # Item Modifier rule
     def p_item_modifier(self, p):
         """item_modifier : ITEM_MODIFIER ID json_object optnewlines"""
+
+    ## Tell / Title rules
+    # Tell rule
+    def p_tell(self, p):
+        """code_block : TELL full_selector string optnewlines"""
+
+    # Title rule
+    def p_title(self, p):
+        """code_block : TITLE full_selector string
+                        | SUBTITLE full_selector string
+                        | ACTIONBAR full_selector string"""
+
+    def p_title_times(self, p):
+        """code_block : TITLE full_selector const_value const_value const_value string
+                        | SUBTITLE full_selector const_value const_value const_value string
+                        | ACTIONBAR full_selector const_value const_value const_value string"""
 
     ## Assignment rules
     # Assignment rule

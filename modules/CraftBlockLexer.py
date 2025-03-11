@@ -15,7 +15,7 @@ class CBLex(object):
             "false", "true",
 
             # Section keywords
-            "clock", "macros", "reset",
+            "clock", "macro", "reset",
 
             # World space alignment keywords
             "align", "as", "at", "eyes", "facing", "feet", "here",
