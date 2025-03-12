@@ -723,7 +723,7 @@ class CBParse(object):
         """const_expr : const_expr LBRACKET const_expr RBRACKET"""
 
     def p_constant_expression_variable(self, p):
-        """const_expr_variable : const_expr DOT const_expr"""
+        """const_expr : const_expr DOT const_expr"""
 
     def p_constant_function_call(self, p):
         """const_expr : DOLLAR FUNCTION_ID optnewlines const_expr_list optnewlines RPAREN"""
