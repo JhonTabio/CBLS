@@ -209,11 +209,10 @@ class CBParse(object):
                         | selector_define_block optnewlines"""
 
     def p_function_call_code_block(self, p):
-        """code_block : function_call_block
-                        | method_call_block
-                        | macro_call
-                        | const_assign
-                        | with_anon"""
+        """code_block : function_call_block optnewlines
+                        | method_call_block optnewlines
+                        | macro_call optnewlines
+                        | with_anon optnewlines"""
 
     ## Execute rules
     # Execute items
@@ -486,6 +485,9 @@ class CBParse(object):
         """assign : variable PLUS_PLUS
                     | variable MINUS_MINUS"""
         # TODO: Increment/Decrement stuffs
+
+    def p_return(self, p):
+        """assign : RETURN expr"""
 
     # Constant assignment rule
     def p_constant_assignment(self, p):
