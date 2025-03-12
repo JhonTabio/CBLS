@@ -157,10 +157,10 @@ class CBParse(object):
 
     # Function rule
     def p_function_section(self, p):
-        """function_section : FUNCTION FUNCTION_ID id_list RPAREN newlines code_blocks END optnewlines"""
+        """function_section : FUNCTION FUNCTION_ID id_list RPAREN newlines code_blocks END newlines"""
 
     def p_function_section_error(self, p):
-        """function_section : FUNCTION error END"""
+        """function_section : FUNCTION error END newlines"""
         self.parser.errok()
 
     def p_id_list(self, p):
@@ -522,6 +522,9 @@ class CBParse(object):
         """variable : SUCCESS NEWLINE COMMAND
                     | RESULT NEWLINE COMMAND"""
 
+    def p_variable_virtual_integer(self, p):
+        """variable : virtual_int"""
+
     ## Arithmetic Rules
     def p_expression_list(self, p):
         """expr_list : expr_list COMMA expr
@@ -545,7 +548,11 @@ class CBParse(object):
         # TODO: Apply such powers
 
     def p_expression_function_call(self, p):
-        """expr : function_call"""
+        """expr : function_call
+                    | method_call"""
+
+    def p_expression_group(self, p):
+        """expr : LPAREN expr RPAREN"""
 
     ## Data rules
     # Data path rule
@@ -717,6 +724,20 @@ class CBParse(object):
 
     def p_constant_expression_variable(self, p):
         """const_expr_variable : const_expr DOT const_expr"""
+
+    def p_constant_function_call(self, p):
+        """const_expr : DOLLAR FUNCTION_ID optnewlines const_expr_list optnewlines RPAREN"""
+
+    ## Virtual Number rules
+    # Virtual Number rule
+    def p_virtual_number(self, p):
+        """virtual_number : number
+                            | const_ID"""
+
+    # Virtual Integer rule
+    def p_virtual_integer(self, p):
+        """virtual_int : int
+                        | const_ID"""
 
     ## MISC rules
     # UUID rule
