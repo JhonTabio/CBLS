@@ -22,7 +22,7 @@ class CBParse(object):
         self.data = None
         self.diagnostics: list[CBDiagnostic] = []
 
-        self.executee = [
+        self.executee = {
         	"attacker",
         	"controller",
         	"leasher",
@@ -31,9 +31,9 @@ class CBParse(object):
         	"passengers",
         	"target",
         	"vehicle"
-        ]
+        }
 
-        self.axis = ["x", "y", "z", "xy", "xz", "yz", "xyz"]
+        self.axis = {"x", "y", "z", "xy", "xz", "yz", "xyz"}
 
     ### Parser rules
     ## File type rules -- Top level rules
@@ -530,6 +530,40 @@ class CBParse(object):
     def p_variable_virtual_integer(self, p):
         """variable : virtual_int"""
 
+    ## Vector Rules
+    # Vector rule
+    def p_vector_variable(self, p):
+        """vector_variable : LESS ID GREATER
+                            | full_selector DOT LESS ID GREATER
+                            | LESS variable COMMA variable COMMA variable GREATER
+                            | const_vector"""
+
+    # Vector expression rule
+    def p_vector_expression(self, p):
+        """vector_expr : LPAREN vector_expr RPAREN
+                        | LESS expr COMMA expr COMMA expr GREATER
+                        | full_selector DOT LESS ID GREATER
+                        | LESS ID GREATER
+                        | HERE LPAREN const_value RPAREN
+                        | HERE
+                        | const_vector"""
+    
+    def p_vector_arithmetic(self, p):
+        """vector_expr : vector_expr PLUS vector_expr
+                        | vector_expr MINUS vector_expr"""
+
+    def p_vector_scalar(self, p):
+        """vector_expr : vector_expr PLUS expr
+                        | expr PLUS vector_expr
+                        | vector_expr MINUS expr
+                        | expr TIMES vector_expr
+                        | vector_expr TIMES expr
+                        | vector_expr DIVIDE expr
+                        | vector_expr MODULO expr"""
+
+    def p_vector_negative(self, p):
+        """vector_expr : MINUS vector_expr"""
+
     ## Arithmetic Rules
     def p_expression_list(self, p):
         """expr_list : expr_list COMMA expr
@@ -726,6 +760,9 @@ class CBParse(object):
 
     def p_constant_array_element(self, p):
         """const_expr : const_expr LBRACKET const_expr RBRACKET"""
+
+    def p_constant_vector(self, p):
+        """const_vector : LESS const_expr GREATER"""
 
     def p_constant_expression_variable(self, p):
         """const_expr : const_expr DOT const_expr"""
