@@ -298,11 +298,14 @@ class CBParse(object):
     ## Loop rules
     # For loop rule
     def p_for(self, p):
-        """code_block : FOR const_ID IN const_value newlines code_blocks END optnewlines"""
+        """code_block : FOR variable EQUALS expr TO expr BY expr newlines code_blocks END optnewlines
+                        | FOR variable EQUALS expr TO expr newlines code_blocks END optnewlines
+                        | FOR const_ID IN const_value newlines code_blocks END optnewlines"""
 
     # While loop rule
     def p_while(self, p):
-        """code_block : WHILE conditionals newlines code_blocks END optnewlines"""
+        """code_block : WHILE conditionals newlines code_blocks END optnewlines
+                        | WHILE conditionals execute_items newlines code_blocks END optnewlines"""
 
     ## Create rules
     # Create ATID
@@ -504,11 +507,11 @@ class CBParse(object):
         """variable : const_int"""
 
     def p_variable_array(self, p):
-        """variable : ID LBRACKET const_int RBRACKET
+        """variable : ID LBRACKET virtual_int RBRACKET
                     | ID LBRACKET expr RBRACKET"""
 
     def p_variable_array_selector(self, p):
-        """variable : full_selector DOT ID LBRACKET const_int RBRACKET
+        """variable : full_selector DOT ID LBRACKET virtual_int RBRACKET
                     | full_selector DOT ID LBRACKET expr RBRACKET"""
 
     def p_variable_ref(self, p):
