@@ -192,6 +192,9 @@ class CBParse(object):
         """code_block : COMMAND optnewlines"""
         # TODO: Validate command
 
+    def p_move_code_block(self, p):
+        """code_block : MOVE full_selector rel_coords optnewlines"""
+
     def p_assignment_code_block(self, p):
         """code_block : assign optnewlines"""
 
@@ -225,7 +228,9 @@ class CBParse(object):
     def p_execute_item(self, p):
         """execute_item : IF conditionals
                         | UNLESS conditionals
-                        | AS full_selector
+                        | AT full_selector opt_anchor
+                        | AT full_selector opt_anchor rel_coords
+                        | AT opt_anchor rel_coords
                         | AT vector_expr
                         | AT LPAREN const_value RPAREN vector_expr
                         | IN OVERWORLD
@@ -244,12 +249,42 @@ class CBParse(object):
     def p_execute_facing_entity(self, p):
         """execute_item : FACING full_selector"""
 
+    def p_execute_facing_relative_coordinates(self, p):
+        """execute_item : FACING rel_coords"""
+
     def p_execute_align(self, p):
         """execute_item : ALIGN ID"""
 
         if p[2] not in self.axis:
             self.diagnostics.append(CBDiagnostic(p.slice[2], self.lexer.find_column(self.data, p.slice[2]), self.parser.state, self.executee))
 
+    # Anchor rule
+    def p_anchor(self, p):
+        """opt_anchor : EYES
+                        | FEET
+                        | empty"""
+
+    def p_optional_constant_value(self, p):
+        """opt_const_value : const_value
+                            | empty"""
+
+    def p_local_coordinates(self, p):
+        """local_coord : POWER opt_const_value"""
+
+    def p_relative_coordinate(self, p):
+        """rel_coord : const_value
+                        | POWER const_value
+                        | TILDE const_value
+                        | TILDE
+                        | TILDE_EMPTY"""
+
+    def p_relative_coordinates(self, p):
+        """rel_coords : rel_coord rel_coord rel_coord
+                        | local_coord local_coord local_coord"""
+
+    def p_optional_coordinates(self, p):
+        """opt_coords : AT rel_coords
+                        | empty"""
 
     def p_execute_else_list(self, p):
         """else_list : else_item else_list
@@ -280,6 +315,11 @@ class CBParse(object):
     def p_execute_as_do(self, p):
         """code_block : AS variable DO code_block else_list optnewlines
                         | AS variable LPAREN ATID RPAREN DO code_block optnewlines"""
+
+    # Execute as inline create
+    def p_execute_as_create(self, p):
+        """code_block : AS create_block newlines code_blocks else_list END optnewlines
+                        | AS create_block DO code_blocks"""
     ## Conditional rules
     # Conditional rule
     def p_conditional(self, p):
@@ -316,10 +356,12 @@ class CBParse(object):
     ## Create rules
     # Create ATID
     def p_ATID_create(self, p):
-        """create_block : CREATE ATID"""
+        """create_block : CREATE ATID rel_coords
+                        | CREATE ATID"""
 
     def p_ATID_index_create(self, p):
-        """create_block : CREATE ATID LBRACKET const_value RBRACKET"""
+        """create_block : CREATE ATID LBRACKET const_value RBRACKET rel_coords
+                        | CREATE ATID LBRACKET const_value RBRACKET"""
 
     ## Macros 
     # Macro section
@@ -537,6 +579,12 @@ class CBParse(object):
     def p_variable_array_selector(self, p):
         """variable : full_selector DOT ID LBRACKET virtual_int RBRACKET
                     | full_selector DOT ID LBRACKET expr RBRACKET"""
+
+    def p_variable_path(self, p):
+        """variable : LBRACKET ID AT rel_coords RBRACKET DOT ID LBRACKET macro_call_params RBRACKET
+                    | LBRACKET ID RBRACKET DOT ID LBRACKET macro_call_params RBRACKET
+                    | LBRACKET ID AT rel_coords RBRACKET DOT ID
+                    | LBRACKET ID RBRACKET DOT ID"""
 
     def p_variable_ref(self, p):
         """variable : REF full_selector"""
