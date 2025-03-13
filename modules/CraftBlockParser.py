@@ -224,7 +224,12 @@ class CBParse(object):
     def p_execute_item(self, p):
         """execute_item : IF conditionals
                         | UNLESS conditionals
-                        | AS full_selector"""
+                        | AS full_selector
+                        | AT vector_expr
+                        | AT LPAREN const_value RPAREN vector_expr
+                        | IN OVERWORLD
+                        | IN THE_NETHER
+                        | IN THE_END"""
 
     def p_execute_on(self, p):
         """execute_item : ON ID"""
@@ -284,6 +289,7 @@ class CBParse(object):
                         | expr LESS_EQUALS expr
                         | expr GREATER expr
                         | expr GREATER_EQUALS expr
+                        | vector_variable EQUALS_EQUALS vector_variable
                         | NOT expr
                         | expr"""
 
@@ -585,6 +591,9 @@ class CBParse(object):
     def p_expression_power(self, p):
         """expr : expr POWER int"""
         # TODO: Apply such powers
+
+    def p_expression_dot(self, p):
+        """expr : vector_expr TIMES vector_expr"""
 
     def p_expression_function_call(self, p):
         """expr : function_call
