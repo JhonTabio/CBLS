@@ -586,6 +586,20 @@ class CBParse(object):
     def p_vector_negative(self, p):
         """vector_expr : MINUS vector_expr"""
 
+    # Vector assignment rule
+    def p_vector_assignment(self, p):
+        """assign : vector_variable EQUALS vector_expr
+                    | vector_variable PLUS_EQUALS vector_expr
+                    | vector_variable MINUS_EQUALS vector_expr"""
+
+    def p_vector_scalar_assignment(self, p):
+        """assign : vector_variable EQUALS expr
+                    | vector_variable PLUS_EQUALS expr
+                    | vector_variable MINUS_EQUALS expr
+                    | vector_variable TIMES_EQUALS expr
+                    | vector_variable MODULO_EQUALS expr"""
+        # TODO: Assignment stuffs
+
     ## Arithmetic rules
     def p_expression_list(self, p):
         """expr_list : expr_list COMMA expr
