@@ -178,10 +178,12 @@ class CBParse(object):
                     | empty"""
 
     def p_function_call(self, p):
-        """function_call : FUNCTION_ID expr_list RPAREN"""
+        """function_call : ID COLON FUNCTION_ID expr_list RPAREN opt_with_macro
+                            | FUNCTION_ID expr_list RPAREN opt_with_macro"""
 
     def p_function_call_block(self, p):
-        """function_call_block : function_call"""
+        """function_call_block : with function_call
+                                | function_call"""
 
     def p_method_call(self, p):
         """method_call : full_selector DOT FUNCTION_ID expr_list RPAREN opt_with_macro"""
