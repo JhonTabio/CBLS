@@ -236,6 +236,7 @@ class CBParse(object):
     def p_execute_item(self, p):
         """execute_item : IF conditionals
                         | UNLESS conditionals
+                        | AS full_selector
                         | AT full_selector opt_anchor
                         | AT full_selector opt_anchor rel_coords
                         | AT opt_anchor rel_coords
@@ -327,7 +328,7 @@ class CBParse(object):
     # Execute as inline create
     def p_execute_as_create(self, p):
         """code_block : AS create_block newlines code_blocks else_list END optnewlines
-                        | AS create_block DO code_blocks"""
+                        | AS create_block DO code_block optnewlines"""
     ## Conditional rules
     # Conditional rule
     def p_conditional(self, p):
