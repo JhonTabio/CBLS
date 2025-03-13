@@ -17,20 +17,28 @@ class CBParse(object):
         self.lexer = lexer
         self.tokens = lexer.tokens
         self.parser = yacc.yacc(module=self)
+        self.precedence = (
+            ("left", "PLUS","MINUS"),
+            ("left", "TIMES","DIVIDE","MOD"),
+            ("left", "POWER"),
+            ("right","UMINUS"),
+            ("left", "VECTOR"),
+            ("left", "COMP"),
+        )
         self.file_params = ["scale"]
 
         self.data = None
         self.diagnostics: list[CBDiagnostic] = []
 
         self.executee = {
-        	"attacker",
-        	"controller",
-        	"leasher",
-        	"origin",
-        	"owner",
-        	"passengers",
-        	"target",
-        	"vehicle"
+            "attacker",
+            "controller",
+            "leasher",
+            "origin",
+            "owner",
+            "passengers",
+            "target",
+            "vehicle"
         }
 
         self.axis = {"x", "y", "z", "xy", "xz", "yz", "xyz"}
@@ -665,6 +673,9 @@ class CBParse(object):
                 | expr DIVIDE expr
                 | expr MODULO expr"""
         # TODO: Do such arithmetics
+
+    def p_expression_negative(self, p):
+        """expr : MINUS expr"""
 
     def p_expression_power(self, p):
         """expr : expr POWER int"""
