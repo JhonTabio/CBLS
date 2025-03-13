@@ -774,6 +774,24 @@ class CBParse(object):
                         | const_expr MODULO const_expr"""
         # TODO: Do such arithmetics
 
+    def p_constant_expression_compare(self, p):
+        """const_expr : const_expr EQUALS_EQUALS const_expr
+                        | const_expr LESS const_expr
+                        | const_expr LESS_EQUALS const_expr
+                        | const_expr GREATER const_expr
+                        | const_expr GREATER_EQUALS const_expr"""
+
+    def p_constant_expression_double(self, p):
+        """const_expr : const_expr NOT EQUALS const_expr
+                        | const_expr TIMES TIMES const_expr"""
+
+    def p_constant_expression_spaced(self, p):
+        """const_expr : const_expr OR const_expr
+                        | const_expr AND const_expr"""
+
+    def p_constant_expression_negative(self, p):
+        """const_expr : MINUS const_expr"""
+
     def p_constant_expression_list(self, p):
         """const_expr_list : const_expr COMMA optnewlines const_expr_list
                             | const_expr
