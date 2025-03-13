@@ -109,6 +109,7 @@ class CBParse(object):
     # Top level block rule
     def p_top_level_block(self, p):
         """top_level_block : advancement
+                            | array
                             | const_assign optnewlines
                             | import
                             | item_modifier
