@@ -410,7 +410,7 @@ class CBParse(object):
                      | ID LESS const_int
                      | ID EQUALS json_object"""
 
-    ## Selector Rules
+    ## Selector rules
     def p_selector_define(self, p):
         """selector_define_block : DEFINE ATID EQUALS full_selector newlines selector_definition END newlines
                                 | DEFINE ATID COLON full_selector newlines selector_definition END newlines
@@ -442,9 +442,24 @@ class CBParse(object):
 
     def p_selector_item_tag(self, p):
         """selector_item : CREATE json_object"""
+
+    def p_selector_item_method(self, p):
+        """selector_item : function_section"""
     
+    def p_selector_item_array(self, p):
+        """selector_item : array"""
+
+    def p_selector_item_predicate(self, p):
+        """selector_item : predicate"""
+
     def p_selector_assignment(self, p):
         """selector_assign : ATID EQUALS full_selector optnewlines"""
+
+    ## Array rules
+    # Array rule
+    def p_array(self, p):
+        """array : ARRAY ID LBRACKET const_value TO const_value RBRACKET
+                    | ARRAY ID LBRACKET const_value RBRACKET"""
 
     ## Advancement rules
     # Advancement rule
@@ -536,7 +551,7 @@ class CBParse(object):
     def p_variable_virtual_integer(self, p):
         """variable : virtual_int"""
 
-    ## Vector Rules
+    ## Vector rules
     # Vector rule
     def p_vector_variable(self, p):
         """vector_variable : LESS ID GREATER
@@ -570,7 +585,7 @@ class CBParse(object):
     def p_vector_negative(self, p):
         """vector_expr : MINUS vector_expr"""
 
-    ## Arithmetic Rules
+    ## Arithmetic rules
     def p_expression_list(self, p):
         """expr_list : expr_list COMMA expr
                         | expr
