@@ -444,7 +444,8 @@ class CBParse(object):
         """qualifier : ID EQUALS"""
 
     def p_qualifier_not(self, p):
-        """qualifier : ID EQUALS NOT ID"""
+        """qualifier : ID EQUALS NOT ID
+                        | NOT ID"""
 
     def p_qualifier_id(self, p):
         """qualifier : ID"""
@@ -826,10 +827,9 @@ class CBParse(object):
 
     ## Constant rules
     def p_constant_value(self, p):
-        """const_value : const_ID
+        """const_value : const_expr
                         | const_string
-                        | const_int
-                        | const_expr"""
+                        | const_int"""
 
     def p_constant_ID(self, p):
         """const_ID : DOLLAR ID"""
