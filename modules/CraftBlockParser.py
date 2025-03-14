@@ -537,14 +537,14 @@ class CBParse(object):
 
     # Title rule
     def p_title(self, p):
-        """code_block : TITLE full_selector string
-                        | SUBTITLE full_selector string
-                        | ACTIONBAR full_selector string"""
+        """code_block : TITLE full_selector string optnewlines
+                        | SUBTITLE full_selector string optnewlines
+                        | ACTIONBAR full_selector string optnewlines"""
 
     def p_title_times(self, p):
-        """code_block : TITLE full_selector const_value const_value const_value string
-                        | SUBTITLE full_selector const_value const_value const_value string
-                        | ACTIONBAR full_selector const_value const_value const_value string"""
+        """code_block : TITLE full_selector const_value const_value const_value string optnewlines
+                        | SUBTITLE full_selector const_value const_value const_value string optnewlines
+                        | ACTIONBAR full_selector const_value const_value const_value string optnewlines"""
 
     ## Assignment rules
     # Assignment rule
