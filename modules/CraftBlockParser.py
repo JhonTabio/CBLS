@@ -357,7 +357,8 @@ class CBParse(object):
     def p_for(self, p):
         """code_block : FOR variable EQUALS expr TO expr BY expr newlines code_blocks END optnewlines
                         | FOR variable EQUALS expr TO expr newlines code_blocks END optnewlines
-                        | FOR const_ID IN const_value newlines code_blocks END optnewlines"""
+                        | FOR const_ID IN const_value newlines code_blocks END optnewlines
+                        | FOR ATID IN full_selector newlines code_blocks END optnewlines"""
 
     # While loop rule
     def p_while(self, p):
@@ -401,7 +402,7 @@ class CBParse(object):
                         | DOLLAR LPAREN ID RPAREN EQUALS string newlines"""
 
     def p_with_macro(self, p):
-        """opt_with_macro : with MACRO
+        """opt_with_macro : WITH MACROS
                             | empty"""
 
     def p_with_anon(self, p):
@@ -553,6 +554,7 @@ class CBParse(object):
                     | variable PLUS_EQUALS expr
                     | variable MINUS_EQUALS expr
                     | variable TIMES_EQUALS expr
+                    | variable DIVIDE_EQUALS expr
                     | variable MODULO_EQUALS expr"""
         # TODO: Assignment stuffs
 
@@ -656,6 +658,7 @@ class CBParse(object):
                     | vector_variable PLUS_EQUALS expr
                     | vector_variable MINUS_EQUALS expr
                     | vector_variable TIMES_EQUALS expr
+                    | vector_variable DIVIDE_EQUALS expr
                     | vector_variable MODULO_EQUALS expr"""
         # TODO: Assignment stuffs
 
