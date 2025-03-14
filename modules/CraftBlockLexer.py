@@ -15,7 +15,7 @@ class CBLex(object):
             "false", "true",
 
             # Section keywords
-            "clock", "macro", "reset",
+            "clock", "macro", "macros", "reset",
 
             # World space alignment keywords
             "align", "as", "at", "eyes", "facing", "feet", "here",
@@ -47,7 +47,7 @@ class CBLex(object):
             "POWER", "PLUS", "PLUS_PLUS", "TIMES",
 
             # Assignment tokens
-            "EQUALS", "MINUS_EQUALS", "MODULO_EQUALS", "PLUS_EQUALS", "TIMES_EQUALS",
+            "DIVIDE_EQUALS", "EQUALS", "MINUS_EQUALS", "MODULO_EQUALS", "PLUS_EQUALS", "TIMES_EQUALS",
 
             # Comparison tokens
             "EQUALS_EQUALS", "GREATER", "GREATER_EQUALS", "LESS", "LESS_EQUALS"]
@@ -90,6 +90,7 @@ class CBLex(object):
         self.t_PLUS_EQUALS = r"\+="
         self.t_MINUS_EQUALS = r"-="
         self.t_TIMES_EQUALS = r"\*="
+        self.t_DIVIDE_EQUALS = r"/="
         self.t_MODULO_EQUALS = r"\%="
 
         ## Comparison tokens
