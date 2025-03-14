@@ -445,7 +445,7 @@ class CBParse(object):
         """qualifier : ID EQUALS"""
 
     def p_qualifier_not(self, p):
-        """qualifier : ID EQUALS NOT ID
+        """qualifier : ID EQUALS NEGATION ID
                         | NOT ID"""
 
     def p_qualifier_id(self, p):
