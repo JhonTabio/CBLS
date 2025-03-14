@@ -121,6 +121,7 @@ class CBParse(object):
                             | const_assign optnewlines
                             | import
                             | item_modifier
+                            | loot_table
                             | selector_assign
                             | selector_define_block
                             | sections
@@ -521,6 +522,16 @@ class CBParse(object):
     # Advancement rule
     def p_advancement(self, p):
         """advancement : ADVANCEMENT ID json_object optnewlines"""
+
+    ## Loot Table rules
+    def p_loot_table_type(self, p):
+        """loot_table_type : BLOCK
+                            | ENTITY"""
+
+    # Loot table rule
+    def p_loot_table(self, p):
+        """loot_table : LOOT_TABLE loot_table_type ID COLON ID json_object optnewlines
+                        | LOOT_TABLE loot_table_type ID json_object optnewlines"""
 
     ## Predicate rules
     # Predicate rule
