@@ -143,7 +143,7 @@ class CBParse(object):
     def p_section(self, p):
         """section : reset_section
                     | clock_section
-                    | function_section
+                    | function_section optnewlines
                     | macro_section"""
         p[0] = p[1]
 
@@ -167,10 +167,10 @@ class CBParse(object):
 
     # Function rule
     def p_function_section(self, p):
-        """function_section : FUNCTION FUNCTION_ID id_list RPAREN newlines code_blocks END newlines"""
+        """function_section : FUNCTION FUNCTION_ID id_list RPAREN newlines code_blocks END"""
 
     def p_function_section_error(self, p):
-        """function_section : FUNCTION error END newlines"""
+        """function_section : FUNCTION error END"""
         self.parser.errok()
 
     def p_id_list(self, p):
@@ -495,9 +495,9 @@ class CBParse(object):
 
     ## Selector rules
     def p_selector_define(self, p):
-        """selector_define_block : DEFINE ATID EQUALS full_selector newlines selector_definition END newlines
-                                | DEFINE ATID COLON full_selector newlines selector_definition END newlines
-                                | DEFINE ATID COLON uuid LPAREN full_selector RPAREN newlines selector_definition END newlines"""
+        """selector_define_block : DEFINE ATID EQUALS full_selector newlines selector_definition END optnewlines
+                                | DEFINE ATID COLON full_selector newlines selector_definition END optnewlines
+                                | DEFINE ATID COLON uuid LPAREN full_selector RPAREN newlines selector_definition END optnewlines"""
 
     def p_selector_define_error(self, p):
         """selector_definition : DEFINE error END newlines"""
