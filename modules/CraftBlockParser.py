@@ -776,7 +776,7 @@ class CBParse(object):
 
         expected = ['b', 'i', 'l']
 
-        if p[3] not in expected:
+        if p[3].lower() not in expected:
             self.diagnostics.append(CBDiagnostic(p.slice[3], self.lexer.find_column(self.data, p.slice[3]), self.parser.state, expected))
 
     def p_json_literal_elements(self, p):
