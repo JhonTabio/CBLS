@@ -344,7 +344,9 @@ class CBParse(object):
                         | expr GREATER_EQUALS expr
                         | vector_variable EQUALS_EQUALS vector_variable
                         | NOT expr
-                        | expr"""
+                        | expr
+                        | nbt_object
+                        | nbt_list"""
 
     def p_conditionals(self, p):
         """conditionals : conditional AND conditionals
@@ -788,6 +790,51 @@ class CBParse(object):
         """json_literal_value : DOLLAR ID
                                 | number
                                 | empty"""
+    
+    ## NBT rules
+    # NBT assignment
+    def p_nbt_assignment(self, p):
+        """assign : nbt_list EQUALS nbt
+                    | nbt_object EQUALS nbt"""
+
+    def p_nbt_append(self, p):
+        """assign : nbt_list PLUS_EQUALS nbt"""
+
+    def p_nbt_merge(self, p):
+        """assign : nbt_object PLUS_EQUALS nbt"""
+
+    def p_nbt_remove(self, p):
+        """code_block : REMOVE nbt_path"""
+
+    def p_nbt_list_entity(self, p):
+        """nbt_list : full_selector DOT LBRACKET data_path RBRACKET"""
+
+    def p_nbt_list_storage(self, p):
+        """nbt_list : ID COLON LBRACKET data_path RBRACKET
+                    | COLON LBRACKET data_path RBRACKET"""
+
+    def p_nbt_object_entity(self, p):
+        """nbt_list : full_selector DOT LCURLY data_path RCURLY"""
+
+    def p_nbt_object_storage(self, p):
+        """nbt_list : ID COLON LCURLY data_path RCURLY
+                    | COLON LCURLY data_path RCURLY"""
+
+    def p_nbt_path_entity(self, p):
+        """nbt_path : full_selector DOT data_path"""
+
+    def p_nbt_path_storage(self, p):
+        """nbt_object : ID COLON data_path
+                    | COLON data_path"""
+
+    def p_nbt_path(self, p):
+        """nbt_path : nbt_object
+                    | nbt_list"""
+
+    def p_nbt(self, p):
+        """nbt : nbt_path
+                | json_object
+                | string"""
 
     ## String rules
     # String rule
