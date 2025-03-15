@@ -351,6 +351,30 @@ class CBParse(object):
     def p_conditionals(self, p):
         """conditionals : conditional AND conditionals
                         | conditional"""
+    
+    def p_conditional_block(self, p):
+        """conditional : BLOCK rel_coords const_ID opt_block_state opt_tile_data
+                        | BLOCK rel_coords ID opt_block_state opt_tile_data
+                        | BLOCK const_ID opt_block_state opt_tile_data
+                        | BLOCK ID opt_block_state opt_tile_data"""
+
+    def p_optional_block_state(self, p):
+        """opt_block_state : LBRACKET block_states RBRACKET
+                            | empty"""
+
+    def p_block_states(self, p):
+        """block_states : ID EQUALS ID COMMA block_states
+                        | ID EQUALS virtual_int COMMA block_states
+                        | FACING EQUALS ID COMMA block_states
+                        | FACING EQUALS virtual_int COMMA block_states
+                        | ID EQUALS ID
+                        | ID EQUALS virtual_int
+                        | FACING EQUALS ID
+                        | FACING EQUALS virtual_int"""
+
+    def p_optional_tile_data(self, p):
+        """opt_tile_data : json_object
+                            | empty"""
 
     def p_if_else(self, p):
         """code_block : IF const_value newlines code_blocks ELSE newlines code_blocks END optnewlines"""
