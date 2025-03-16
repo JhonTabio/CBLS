@@ -17,14 +17,6 @@ class CBParse(object):
         self.lexer = lexer
         self.tokens = lexer.tokens
         self.parser = yacc.yacc(module=self)
-        self.precedence = (
-            ("left", "PLUS","MINUS"),
-            ("left", "TIMES","DIVIDE","MOD"),
-            ("left", "POWER"),
-            ("right","UMINUS"),
-            ("left", "VECTOR"),
-            ("left", "COMP"),
-        )
         self.file_params = ["scale"]
 
         self.data = None
