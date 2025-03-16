@@ -20,7 +20,6 @@ class CBParse(object):
         self.file_params = ["scale"]
 
         self.data = None
-        self.found_dir = False
         self.diagnostics: list[CBDiagnostic] = []
 
         self.executee = {
@@ -79,7 +78,6 @@ class CBParse(object):
         """cblib : top_level_blocks"""
         p[0] = ("cblib", p[1])
 
-
     ## Program type rules
     # Script rules
     def p_script(self, p):
@@ -88,8 +86,6 @@ class CBParse(object):
             "DIR": p[1],
             "DESC": p[2]
         }
-
-        self.found_dir = True
 
     # Dir rules
     def p_dir(self, p):
@@ -1043,10 +1039,6 @@ class CBParse(object):
 
             expected = [token for token in self.parser.action[state].keys() if not token == "error"]
 
-            # Check if our error resides in the first line
-            # Also check if the parser expects to terminate,
-            # this means that cblib was triggered early
-            # i.e. incorrect first token
             self.diagnostics.append(CBDiagnostic(p, self.lexer.find_column(self.data, p), self.parser.state, expected))
             print(self.diagnostics[-1].message)
 
@@ -1065,5 +1057,4 @@ class CBParse(object):
         self.parser.errok()
         self.parser.restart()
         self.data = []
-        self.found_dir = False
         self.diagnostics = []

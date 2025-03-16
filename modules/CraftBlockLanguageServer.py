@@ -69,10 +69,23 @@ class CraftBlockLanguageServer(LanguageServer):
             return
 
         file_ext = document.filename.split('.')[1]
-        self.show_message(f"got {file_ext}")
-        self.parser.parse(document.source)
+
+        ext, _ = self.parser.parse(document.source)
 
         diagnostics: list[Diagnostic] = []
+
+        if file_ext == "cbscript" and ext == "cblib":
+            diagnostics.append(Diagnostic(
+                    range=Range(start=Position(0, 0), end=Position(0, 0)), 
+                    message="Compiler error in file. Script files should contain directory for output ('DIR' keyword)", 
+                    severity=DiagnosticSeverity.Error, 
+                    source="cbls"))
+        elif file_ext == "cblib" and ext == "cbscript":
+            diagnostics.append(Diagnostic(
+                    range=Range(start=Position(0, 0), end=Position(0, 0)), 
+                    message="Compiler error in file. Libraries should not contain directory for output ('DIR' keyword)", 
+                    severity=DiagnosticSeverity.Error, 
+                    source="cbls"))
 
         for d in self.parser.diagnostics:
             diag = Diagnostic(
