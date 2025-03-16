@@ -64,6 +64,12 @@ class CraftBlockLanguageServer(LanguageServer):
             Extract syntactical meaning from a given document
         """
 
+        if not document.filename:
+            self.show_message("Error with filename")
+            return
+
+        file_ext = document.filename.split('.')[1]
+        self.show_message(f"got {file_ext}")
         self.parser.parse(document.source)
 
         diagnostics: list[Diagnostic] = []

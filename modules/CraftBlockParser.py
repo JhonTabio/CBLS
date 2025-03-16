@@ -20,6 +20,7 @@ class CBParse(object):
         self.file_params = ["scale"]
 
         self.data = None
+        self.found_dir = False
         self.diagnostics: list[CBDiagnostic] = []
 
         self.executee = {
@@ -41,15 +42,43 @@ class CBParse(object):
     def p_parsed(self, p):
         """parsed : cbscript
                     | cblib"""
+        p[0] = p[1]
+
+    def p_parsed_bad_cblib(self, p):
+        """parsed : optnewlines cblib"""
+        p[0] = ("cblib", p[2])
+
+        p.slice[1].value = '\n'
+
+        expected = [token for token in self.parser.action[0].keys() if not token == "error"] # Simulate being at state 0, instead of recovered state
+
+        self.diagnostics.append(CBDiagnostic(p.slice[1], self.lexer.find_column(self.data, p.slice[1]), self.parser.state, expected))
+        self.diagnostics[-1].message = f"Syntax error at line {p.slice[1].lineno - 1}. Unexpected start of file token, expected {expected}"
 
     # .cbscript files
     def p_cbscript(self, p):
         """cbscript : script"""
         p[0] = ("cbscript", p[1])
 
+    def p_cbscript_bad_start(self, p):
+        """cbscript : optnewlines script"""
+        p[0] = ("cbscript", p[2])
+
+        p.slice[1].value = '\n'
+        self.diagnostics.append(CBDiagnostic(p.slice[1], self.lexer.find_column(self.data, p.slice[1]), self.parser.state, ["DIR"]))
+        self.diagnostics[-1].message = f"Syntax error at line {p.slice[1].lineno - 1}. Unexpected start of file token, please ensure 'DIR' is at the top"
+
+    def p_cbscript_error(self, p):
+        """cbscript : optnewlines error script"""
+        p[0] = ("cbscript", p[3])
+
+        self.diagnostics[-1].message = f"Syntax error at line {p.slice[2].lineno - 1}. Unexpected {p.slice[2].value.type} type of {repr(p.slice[2].value.value)} start of file token, please ensure 'DIR' is at the top"
+        self.parser.errok()
+
     def p_cblib(self, p):
-        """cblib : import top_level_blocks"""
+        """cblib : top_level_blocks"""
         p[0] = ("cblib", p[1])
+
 
     ## Program type rules
     # Script rules
@@ -59,6 +88,8 @@ class CBParse(object):
             "DIR": p[1],
             "DESC": p[2]
         }
+
+        self.found_dir = True
 
     # Dir rules
     def p_dir(self, p):
@@ -497,7 +528,7 @@ class CBParse(object):
                                 | DEFINE ATID COLON uuid LPAREN full_selector RPAREN newlines selector_definition END optnewlines"""
 
     def p_selector_define_error(self, p):
-        """selector_definition : DEFINE error END newlines"""
+        """selector_definition : DEFINE error END optnewlines"""
         self.parser.errok()
 
     def p_selector_definition(self, p):
@@ -1009,12 +1040,18 @@ class CBParse(object):
             print("Syntax error: unexpected End of File")
         else:
             state = self.parser.state
+
             expected = [token for token in self.parser.action[state].keys() if not token == "error"]
+
+            # Check if our error resides in the first line
+            # Also check if the parser expects to terminate,
+            # this means that cblib was triggered early
+            # i.e. incorrect first token
             self.diagnostics.append(CBDiagnostic(p, self.lexer.find_column(self.data, p), self.parser.state, expected))
             print(self.diagnostics[-1].message)
 
     ### Parser Functions
-    def parse(self, data, debug=0):
+    def parse(self, data,  debug=0):
         self.data = data
         ret =  self.parser.parse(data, debug=debug, tracking=True)
         if debug:
@@ -1028,4 +1065,5 @@ class CBParse(object):
         self.parser.errok()
         self.parser.restart()
         self.data = []
+        self.found_dir = False
         self.diagnostics = []
