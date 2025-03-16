@@ -1,9 +1,8 @@
 from lsprotocol.types import (
     CompletionItem, CompletionParams, CompletionOptions,
-    Diagnostic, DiagnosticSeverity,
     DidChangeTextDocumentParams, DidOpenTextDocumentParams,
-    Position, Range, SemanticTokensRegistrationOptions,
-    SemanticTokens, SemanticTokensLegend, SemanticTokensParams, 
+    SemanticTokensRegistrationOptions, SemanticTokens,
+    SemanticTokensLegend, SemanticTokensParams, 
     TEXT_DOCUMENT_COMPLETION, TEXT_DOCUMENT_DID_OPEN, 
     TEXT_DOCUMENT_DID_CHANGE, TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL
     )
@@ -14,7 +13,7 @@ from modules.TokenUtils import TokenModifier, TOKEN_TYPES
 
 lexer = CBLex()
 parser = CBParse(lexer)
-server = CraftBlockLanguageServer(lexer, parser, "cbls", "v0.1")
+server = CraftBlockLanguageServer(lexer, parser, "cbls", "v0.1.0")
 
 legend = SemanticTokensLegend(token_types=TOKEN_TYPES, token_modifiers=[m.name for m in TokenModifier if m.name is not None])
 
@@ -66,7 +65,7 @@ async def did_change(s: CraftBlockLanguageServer, p: DidChangeTextDocumentParams
     document = s.workspace.get_text_document(uri)
     text = document.source # To retrieve full document
     #text = p.content_changes[0].text # To retireve what was changed
-    lines = text.split('\n')
+    #lines = text.split('\n')
 
     s.lex(document)
     s.parse(document)
