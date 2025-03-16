@@ -37,14 +37,19 @@ class CBParse(object):
 
     ### Parser rules
     ## File type rules -- Top level rules
+    # Parsed file
+    def p_parsed(self, p):
+        """parsed : cbscript
+                    | cblib"""
+
     # .cbscript files
     def p_cbscript(self, p):
         """cbscript : script"""
         p[0] = ("cbscript", p[1])
 
-    #def p_cblib(self, p):
-        #"""cblib : lib"""
-        #p[0] = ("cblib", p[1])
+    def p_cblib(self, p):
+        """cblib : import top_level_blocks"""
+        p[0] = ("cblib", p[1])
 
     ## Program type rules
     # Script rules
@@ -1008,39 +1013,14 @@ class CBParse(object):
             self.diagnostics.append(CBDiagnostic(p, self.lexer.find_column(self.data, p), self.parser.state, expected))
             print(self.diagnostics[-1].message)
 
-            # Handle 'dir' not first line
-            if self.parser.state == 0: # Initial state, meaning first error we've ran into (Anything but 'dir')
-                skip = 0 # Next parsing pass we skip n amount of error tokens
-                while True:
-                    token = self.parser.token()
-                    if not token: # EOF
-                        return # TODO: Handle never finding 'dir' token
-                    elif token.type == "DIR":
-                        break
-                    skip += 1
-
-                self.parser.restart() # Don't really think a reset is needed knowing this fires at state 0
-                self.parser.errok()
-
-                self.lexer.reset()
-                p.lexer.input(p.lexer.lexdata) # Reset lexer tokens
-                #p.lexer.lineno = 1 # Reset lexer line number
-                for _ in range(skip + 1): # Skip n + 1 to include the first error token we missed
-                    token = self.parser.token()
-            else:
-                pass
-                #self.parser.token() # Skip errorneous token
-
     ### Parser Functions
     def parse(self, data, debug=0):
-        #self.lexer.lineno = 1 # Reset lexer every parse
-        #self.reset()
-
         self.data = data
-        #return self.parser.parse(data, debug=debug, tracking=True)
         ret =  self.parser.parse(data, debug=debug, tracking=True)
-        for i, d in enumerate(self.diagnostics):
-            print(f"[{i}]: {d}\n")
+        if debug:
+            for i, d in enumerate(self.diagnostics):
+                print(f"[{i}]: {d}\n")
+
         return ret
 
     def reset(self):
