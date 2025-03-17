@@ -92,7 +92,7 @@ TOKEN_MAPPING = {
     "TILDE": "operator",
     "TILDE_EMPTY": "operator",
     "REF": "operator",
-    "NOT": "operator",
+    "NEGATION": "operator",
 
     # Data Types
     "array": "type",

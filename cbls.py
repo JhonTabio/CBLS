@@ -13,7 +13,7 @@ from modules.TokenUtils import TokenModifier, TOKEN_TYPES
 
 lexer = CBLex()
 parser = CBParse(lexer)
-server = CommandBlockLanguageServer(lexer, parser, "cbls", "v0.1.0")
+server = CommandBlockLanguageServer(lexer, parser, "cbls", "v0.1.1")
 
 legend = SemanticTokensLegend(token_types=TOKEN_TYPES, token_modifiers=[m.name for m in TokenModifier if m.name is not None])
 
