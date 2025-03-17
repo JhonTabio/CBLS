@@ -4,9 +4,9 @@ from pygls.server import LanguageServer
 from pygls.workspace import TextDocument
 from modules.TokenUtils import TOKEN_MAPPING, TOKEN_TYPES
 
-class CraftBlockLanguageServer(LanguageServer):
+class CommandBlockLanguageServer(LanguageServer):
     """
-        CraftBlockScript Language Server
+        CommandBlockScript Language Server
 
         Currently able to highlight keywords and detect '#' tokens
     """

@@ -6,19 +6,19 @@ from lsprotocol.types import (
     TEXT_DOCUMENT_COMPLETION, TEXT_DOCUMENT_DID_OPEN, 
     TEXT_DOCUMENT_DID_CHANGE, TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL
     )
-from modules.CraftBlockLanguageServer import CraftBlockLanguageServer
-from modules.CraftBlockLexer import CBLex
-from modules.CraftBlockParser import CBParse
+from modules.CommandBlockLanguageServer import CommandBlockLanguageServer
+from modules.CommandBlockLexer import CBLex
+from modules.CommandBlockParser import CBParse
 from modules.TokenUtils import TokenModifier, TOKEN_TYPES
 
 lexer = CBLex()
 parser = CBParse(lexer)
-server = CraftBlockLanguageServer(lexer, parser, "cbls", "v0.1.0")
+server = CommandBlockLanguageServer(lexer, parser, "cbls", "v0.1.0")
 
 legend = SemanticTokensLegend(token_types=TOKEN_TYPES, token_modifiers=[m.name for m in TokenModifier if m.name is not None])
 
 @server.feature(TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL, SemanticTokensRegistrationOptions(legend=legend, full=True))
-async def semantic_tokens(s: CraftBlockLanguageServer, p: SemanticTokensParams) -> SemanticTokens:
+async def semantic_tokens(s: CommandBlockLanguageServer, p: SemanticTokensParams) -> SemanticTokens:
     """
         Provides semantic token coloring for syntax highlighting
     """
@@ -45,7 +45,7 @@ def completion(p: CompletionParams) -> list[CompletionItem]:
     ]
 
 @server.feature(TEXT_DOCUMENT_DID_OPEN)
-async def did_open(s: CraftBlockLanguageServer, p: DidOpenTextDocumentParams):
+async def did_open(s: CommandBlockLanguageServer, p: DidOpenTextDocumentParams):
     """
         Handles text when document is opened in the editor
     """
@@ -54,7 +54,7 @@ async def did_open(s: CraftBlockLanguageServer, p: DidOpenTextDocumentParams):
     s.parse(document)
 
 @server.feature(TEXT_DOCUMENT_DID_CHANGE)
-async def did_change(s: CraftBlockLanguageServer, p: DidChangeTextDocumentParams):
+async def did_change(s: CommandBlockLanguageServer, p: DidChangeTextDocumentParams):
     """
         Handles live text changes in the editor
 

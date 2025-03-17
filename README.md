@@ -1,5 +1,5 @@
-# CraftBlock Language Server - CBLS
-### A language server for cbscript
+# Command Block Language Server - CBLS
+### A language server for CBScript
 
 **Version**: v0.1.0
 
