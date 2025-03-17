@@ -23,6 +23,10 @@ These are the features I'd like to have implemented, with its current progressio
 - ⏳ **Diagnostics/Warnings**
 - ❌ **Customizable configuration**
 
+## Related Projects
+
+- [cbscript](https://github.com/SethBling/cbscript) – Official repository for SethBling's cbscript.
+
 ## Contributing
 Contributions are always welcomed, this is my first in-depth project in making an LSP, let alone both a lexer and parser.</br>
 If you see areas which can be improved, feel free to submit a pull request.
