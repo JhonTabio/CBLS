@@ -87,6 +87,14 @@ class CBParse(object):
             "DESC": p[2]
         }
 
+    # Stand alone dir
+    def p_script_only_dir(self, p):
+        """script : DIR string"""
+        p[0] = {
+            "DIR": p[2],
+            "DESC": "No output directory"
+        }
+
     # Dir rules
     def p_dir(self, p):
         """dir : DIR string newlines"""
