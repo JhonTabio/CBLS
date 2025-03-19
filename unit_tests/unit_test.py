@@ -3,24 +3,26 @@ from modules.CommandBlockLexer import CBLex
 from modules.CommandBlockParser import CBParse
 from typing import List, Optional
 
-class unit_test(unittest.TestCase):
-    # unittest calls 'setUp' prior to any testing
-    def setUp(self) -> None:
-        self.parser = CBParse(CBLex())
+class CBLS_Tests(unittest.TestCase):
+    # unittest calls 'setUpClass' once prior to any testing
+    @classmethod
+    def setUpClass(cls) -> None:
+        # PLY Parsers *should* be defined once
+        cls.parser = CBParse(CBLex())
 
     # unittest calls 'tearDown' after a testcase
     def tearDown(self) -> None:
         self.parser.reset()
 
     # Helper function to test results
-    def error_test(self, input_data: str, expected: List[str], file_ext: Optional[str] = None) -> None:
+    def parser_test(self, input_data: str, expected_errors: List[str], file_ext: Optional[str] = None) -> None:
         ext, _ = self.parser.parse(input_data)
     
         if file_ext:
             self.assertEqual(ext, file_ext)
 
         query = [d.message for d in self.parser.diagnostics]
-        self.assertEqual(query, expected)
+        self.assertEqual(query, expected_errors)
 
     ### Unit tests
     ## New file testing
@@ -31,10 +33,27 @@ class unit_test(unittest.TestCase):
             This is because library files have no start of file restriction, unlike script files.
         """
         input_data = ""
-        expected = []
+        expected_errors = []
         ext = "cblib"
 
-        self.error_test(input_data, expected, ext)
+        self.parser_test(input_data, expected_errors, ext)
+
+    # Proper CBScript start
+    def test_cbscript_start_file(self) -> None:
+        input_data = """dir 'CommandBlockLanguageServer Unit Testing :)'
+        """
+        expected_errors = []
+        ext = "cbscript"
+        
+        self.parser_test(input_data, expected_errors, ext)
+
+    # Proper CBLib start
+    def test_cblib_start_file(self) -> None:
+        input_data = "import unittest"
+        expected_errors = []
+        ext = "cblib"
+        
+        self.parser_test(input_data, expected_errors, ext)
 
 if __name__ == "__main__":
     unittest.main()
