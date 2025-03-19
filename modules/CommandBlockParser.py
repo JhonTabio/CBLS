@@ -1056,12 +1056,12 @@ class CBParse(object):
             expected = [token for token in self.parser.action[state].keys() if not token == "error"]
 
             self.diagnostics.append(CBDiagnostic(p, self.lexer.find_column(self.data, p), self.parser.state, expected))
-            print(self.diagnostics[-1].message)
 
     ### Parser Functions
-    def parse(self, data,  debug=0):
+    def parse(self, data, debug=0):
         self.data = data
         ret =  self.parser.parse(data, debug=debug, tracking=True)
+
         if debug:
             for i, d in enumerate(self.diagnostics):
                 print(f"[{i}]: {d}\n")
