@@ -1,7 +1,7 @@
 # Command Block Language Server - CBLS
 ### A language server for CBScript
 
-**Version**: v0.1.1
+**Version**: v0.1.2
 
 CBLS provides developers with a set of language features to improve the experience of coding in 'cbscript' (developed by SethBling).
 
