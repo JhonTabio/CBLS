@@ -49,7 +49,7 @@ class CBParse(object):
 
         p.slice[1].value = '\n'
 
-        expected = [token for token in self.parser.action[0].keys() if not token == "error"] # Simulate being at state 0, instead of recovered state
+        expected = [token for token in self.parser.action[0].keys() if not token == "error"]
 
         self.diagnostics.append(CBDiagnostic(p.slice[1], self.lexer.find_column(self.data, p.slice[1]), self.parser.state, expected))
         self.diagnostics[-1].message = f"Syntax error at line {p.slice[1].lineno - 1}. Unexpected start of file token, expected {expected}"
@@ -242,6 +242,10 @@ class CBParse(object):
 
     def p_define_name_code_block(self, p):
         """code_block : DEFINE NAME ID EQUALS string optnewlines"""
+
+    def p_define_name_code_block_error(self, p):
+        """code_block : DEFINE error optnewlines"""
+        self.parser.errok()
 
     def p_selector_block_code_block(self, p):
         """code_block : selector_assign optnewlines
@@ -481,6 +485,10 @@ class CBParse(object):
     def p_full_selector_qualifiers(self, p):
         """full_selector : ATID LBRACKET const_int RBRACKET
                         | ATID LBRACKET qualifiers RBRACKET"""
+
+    def p_full_selector_error(self, p):
+        """full_selector : ATID LBRACKET error RBRACKET"""
+        self.parser.errok()
 
     ## Qualifiers
     def p_qualifier_single(self, p):
