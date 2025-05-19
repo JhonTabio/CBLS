@@ -164,9 +164,10 @@ class CBLex(object):
         return t
     
     # Comment token
-    def t_COMMENT(self, _):
+    def t_COMMENT(self, t):
         r"\#.+"
-        pass
+        t.lexer.lineno += 1
+        t.lexer.skip(1)
     
     # Newline token
     def t_NEWLINE(self, t):
