@@ -59,6 +59,10 @@ class CBParse(object):
         """cbscript : script"""
         p[0] = ("cbscript", p[1])
 
+    def p_cbscript_comment_start(self, p):
+        """cbscript : COMMENT optnewlines script"""
+        p[0] = ("cbscript", p[3])
+
     def p_cbscript_bad_start(self, p):
         """cbscript : optnewlines script"""
         p[0] = ("cbscript", p[2])
@@ -77,6 +81,10 @@ class CBParse(object):
     def p_cblib(self, p):
         """cblib : top_level_blocks"""
         p[0] = ("cblib", p[1])
+
+    def p_cblib_comment_start(self, p):
+        """cblib : COMMENT optnewlines top_level_blocks"""
+        p[0] = ("cblib", p[3])
 
     ## Program type rules
     # Script rules
@@ -1032,6 +1040,8 @@ class CBParse(object):
     # Newline rule
     def p_newlines(self, p):
         """newlines : newlines NEWLINE
+                    | newlines COMMENT
+                    | COMMENT
                     | NEWLINE"""
         p[0] = None
 
