@@ -1,3 +1,5 @@
+from collections import defaultdict
+from typing import DefaultDict
 import ply.yacc as yacc
 
 class CBDiagnostic(object):
@@ -20,6 +22,7 @@ class CBParse(object):
         self.file_params = ["scale"]
 
         self.data = None
+        self.context: DefaultDict = defaultdict()
         self.diagnostics: list[CBDiagnostic] = []
 
         self.executee = {
@@ -548,7 +551,7 @@ class CBParse(object):
                                 | DEFINE ATID COLON uuid LPAREN full_selector RPAREN newlines selector_definition END optnewlines"""
 
     def p_selector_define_error(self, p):
-        """selector_definition : DEFINE error END optnewlines"""
+        """selector_define_block : DEFINE error END optnewlines"""
         self.parser.errok()
 
     def p_selector_definition(self, p):
