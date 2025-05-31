@@ -1,5 +1,6 @@
+import re
 from lsprotocol.types import (
-    CompletionItem, CompletionParams, CompletionOptions,
+    CompletionItem, CompletionItemKind, CompletionList, CompletionParams, CompletionOptions,
     DidChangeTextDocumentParams, DidOpenTextDocumentParams,
     SemanticTokensRegistrationOptions, SemanticTokens,
     SemanticTokensLegend, SemanticTokensParams, 
@@ -28,21 +29,27 @@ async def semantic_tokens(s: CommandBlockLanguageServer, p: SemanticTokensParams
     TEXT_DOCUMENT_COMPLETION,
     CompletionOptions(trigger_characters=["."]),
 )
-def completion(p: CompletionParams) -> list[CompletionItem]:
+def completion(p: CompletionParams) -> CompletionList:
     """
         Handles autocomplete suggestions
     """
     document = server.workspace.get_text_document(p.text_document.uri)
-    current_line = document.lines[p.position.line].strip()
+    current_line = document.lines[p.position.line][:p.position.character]
 
-    if not current_line.endswith("hello."):
-        return []
+    appropriate = re.search(r"(@?\w+)\.$", current_line)
+    server.show_message(str(appropriate))
 
-    return [
-        CompletionItem(label="world"),
-        CompletionItem(label="friend"),
-        CompletionItem(label="mate"),
-    ]
+    if appropriate:
+        name = appropriate.group(1)
+        server.show_message(name)
+        server.show_message(str(server.parser.context))
+        suggestions = [s for s in server.parser.context[name] if s is not None]
+        server.show_message(str(suggestions))
+        server.show_message(str(type(suggestions)))
+        return CompletionList(is_incomplete=False, items=[CompletionItem(label=s, kind=CompletionItemKind.Field) for s in suggestions])
+
+    return CompletionList(is_incomplete=False, items=[CompletionItem(label=s, kind=CompletionItemKind.Variable) for s in server.parser.context.keys()])
+
 
 @server.feature(TEXT_DOCUMENT_DID_OPEN)
 async def did_open(s: CommandBlockLanguageServer, p: DidOpenTextDocumentParams):

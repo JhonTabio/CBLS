@@ -549,30 +549,38 @@ class CBParse(object):
         """selector_define_block : DEFINE ATID EQUALS full_selector newlines selector_definition END optnewlines
                                 | DEFINE ATID COLON full_selector newlines selector_definition END optnewlines
                                 | DEFINE ATID COLON uuid LPAREN full_selector RPAREN newlines selector_definition END optnewlines"""
+        self.context[p[2]] = p[6]
 
     def p_selector_define_error(self, p):
         """selector_define_block : DEFINE error END optnewlines"""
         self.parser.errok()
 
     def p_selector_definition(self, p):
-        """selector_definition : selector_item newlines selector_definition
-                                | empty"""
+        """selector_definition : selector_item newlines selector_definition"""
+        p[0] = [p[1]] + p[3]
+
+    def p_selector_definition_empty(self, p):
+        """selector_definition : empty"""
+        p[0] = []
 
     def p_selector_pointer(self, p):
         """selector_item : ID EQUALS full_selector
                             | ID COLON full_selector"""
+        p[0] = p[1]
 
     def p_selector_item_path(self, p):
         """selector_item : ID EQUALS data_path data_type const_value
                             | ID COLON data_path data_type const_value
                             | ID EQUALS data_path data_type
                             | ID COLON data_path data_type"""
+        p[0] = p[1]
 
     def p_selector_item_vector_path(self, p):
         """selector_item : LESS ID GREATER EQUALS data_path data_type const_value
                             | LESS ID GREATER COLON data_path data_type const_value
                             | LESS ID GREATER EQUALS data_path data_type
                             | LESS ID GREATER COLON data_path data_type"""
+        #p[0] = "<" + p[1] + ">"
 
     def p_selector_item_tag(self, p):
         """selector_item : CREATE json_object"""
