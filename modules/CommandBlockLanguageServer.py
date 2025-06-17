@@ -1,5 +1,7 @@
-from typing import Dict, List
+from collections import defaultdict
+from typing import DefaultDict, Dict, List
 from lsprotocol.types import Diagnostic, DiagnosticSeverity, Position, Range
+from pathlib import Path
 from pygls.server import LanguageServer
 from pygls.workspace import TextDocument
 from modules.TokenUtils import TOKEN_MAPPING, TOKEN_TYPES
@@ -8,7 +10,7 @@ class CommandBlockLanguageServer(LanguageServer):
     """
         CommandBlockScript Language Server
 
-        Currently able to highlight keywords and detect '#' tokens
+        Currently able to highlight keywords, parse files and generate an AST
     """
 
     def __init__(self, lexer, parser, *args, **kwargs):
@@ -18,6 +20,8 @@ class CommandBlockLanguageServer(LanguageServer):
         self.parser = parser
 
         self.tokens: Dict[str, List[int]] = {}
+        self.global_context: DefaultDict = defaultdict()
+        self.imports: List = []
 
 
     def lex(self, document: TextDocument):
@@ -74,10 +78,11 @@ class CommandBlockLanguageServer(LanguageServer):
             return
 
         file_ext = document.filename.split('.')[1]
+        self.parser.path = Path(document.path)
 
         parsed = self.parser.parse(document.source)
 
-        diagnostics: list[Diagnostic] = []
+        diagnostics: List[Diagnostic] = []
 
         if parsed:
             ext, _ = parsed
@@ -102,6 +107,27 @@ class CommandBlockLanguageServer(LanguageServer):
                     message=d.message, 
                     severity=DiagnosticSeverity.Error, 
                     source="cbls"))
+
+        diff = set(self.imports) ^ set(self.parser.imports)
+
+        for import_name in diff:
+            self.parser.reset()
+            parent = Path(document.path).parent
+            self.parser.path = parent / f"{import_name}.cblib"
+
+            # File should exist as parser handles existing checking
+            with open(self.parser.path, 'r', encoding="utf-8") as f:
+                self.parser.parse(f.read())
+                
+                temp = defaultdict(list)
+                for key, val in self.parser.context.items():
+                    temp[key] = val.copy()
+
+                for key, val in self.global_context.items():
+                    temp[key] = val.copy()
+
+                self.global_context = temp
+                self.imports += self.parser.imports
 
         self.publish_diagnostics(document.uri, diagnostics)
         self.parser.reset()

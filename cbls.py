@@ -42,13 +42,13 @@ def completion(p: CompletionParams) -> CompletionList:
     if appropriate:
         name = appropriate.group(1)
         server.show_message(name)
-        server.show_message(str(server.parser.context))
-        suggestions = [s for s in server.parser.context[name] if s is not None]
+        server.show_message(str(server.global_context))
+        suggestions = [s for s in server.global_context[name] if s is not None]
         server.show_message(str(suggestions))
         server.show_message(str(type(suggestions)))
         return CompletionList(is_incomplete=False, items=[CompletionItem(label=s, kind=CompletionItemKind.Field) for s in suggestions])
 
-    return CompletionList(is_incomplete=False, items=[CompletionItem(label=s, kind=CompletionItemKind.Variable) for s in server.parser.context.keys()])
+    return CompletionList(is_incomplete=False, items=[CompletionItem(label=s, kind=CompletionItemKind.Variable) for s in server.global_context.keys()])
 
 
 @server.feature(TEXT_DOCUMENT_DID_OPEN)

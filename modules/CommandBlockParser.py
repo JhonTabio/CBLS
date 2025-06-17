@@ -1,5 +1,6 @@
 from collections import defaultdict
-from typing import DefaultDict
+from typing import DefaultDict, List
+from pathlib import Path
 import ply.yacc as yacc
 
 class CBDiagnostic(object):
@@ -15,15 +16,17 @@ class CBDiagnostic(object):
         return self.message + "\n" + self.label
 
 class CBParse(object):
-    def __init__(self, lexer):
+    def __init__(self, lexer, path=None):
         self.lexer = lexer
         self.tokens = lexer.tokens
         self.parser = yacc.yacc(module=self)
         self.file_params = ["scale"]
+        self.path = path
 
         self.data = None
         self.context: DefaultDict = defaultdict()
-        self.diagnostics: list[CBDiagnostic] = []
+        self.imports: List = []
+        self.diagnostics: List[CBDiagnostic] = []
 
         self.executee = {
             "attacker",
@@ -146,13 +149,15 @@ class CBParse(object):
     def p_file_param(self, p):
         """file_param : ID int newlines"""
         if p[1] not in self.file_params:
-            print(f"File param error: Unknown parameter '{p[1]}' at line {p.lineno(1)}")
+            self.diagnostics.append(CBDiagnostic(p.slice[1], self.lexer.find_column(self.data, p.slice[1]), self.parser.state, self.file_params))
+            self.diagnostics[-1].message = f"File param error: Unknown parameter '{p[1]}' at line {p.lineno(1)}"
         p[0] = (p[1], int(p[2]))
 
     def p_file_param_error(self, p):
         """file_param : ID error newlines"""
         if p[1] not in self.file_params:
-            print(f"File param error: Unknown parameter '{p[1]}' at line {p.lineno(1)}")
+            self.diagnostics.append(CBDiagnostic(p.slice[1], self.lexer.find_column(self.data, p.slice[1]), self.parser.state, self.file_params))
+            self.diagnostics[-1].message = f"File param error: Unknown parameter '{p[1]}' at line {p.lineno(1)}"
         p[0] = (p[1], int(1000))
         self.parser.errok()
 
@@ -177,6 +182,27 @@ class CBParse(object):
 
     def p_import(self, p):
         """import : IMPORT ID optnewlines"""
+
+        if not self.path:
+            return
+
+        if p[2] in self.imports:
+            return
+
+        if p[2] == self.path.stem:
+            self.diagnostics.append(CBDiagnostic(p.slice[2], self.lexer.find_column(self.data, p.slice[2]), self.parser.state, []))
+            self.diagnostics[-1].message = f"Import Error: '{p[2]}' at line {p.lineno(1)} could not be resolved"
+            return
+
+        directory = self.path.parent
+        path = directory / f"{p[2]}.cblib"
+
+        if not path.is_file():
+            self.diagnostics.append(CBDiagnostic(p.slice[2], self.lexer.find_column(self.data, p.slice[2]), self.parser.state, []))
+            self.diagnostics[-1].message = f"Import Error: '{p[2]}' at line {p.lineno(1)} could not be resolved"
+            return
+        
+        self.imports.append(p[2])
 
     ## Section rules
     def p_sections(self, p):
@@ -1111,3 +1137,6 @@ class CBParse(object):
         self.parser.restart()
         self.data = []
         self.diagnostics = []
+        self.path = None
+        self.imports = []
+        self.context = defaultdict()
