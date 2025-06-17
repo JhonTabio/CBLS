@@ -168,7 +168,8 @@ class CBParse(object):
                             | selector_assign
                             | selector_define_block
                             | sections
-                            | predicate"""
+                            | predicate
+                            | COMMENT optnewlines"""
 
     def p_top_level_blocks(self, p):
         """top_level_blocks : top_level_block top_level_blocks optnewlines
@@ -275,6 +276,9 @@ class CBParse(object):
                         | method_call_block optnewlines
                         | macro_call optnewlines
                         | with_anon optnewlines"""
+
+    def p_comment_code_block(self, p):
+        """code_block : COMMENT optnewlines"""
 
     ## Execute rules
     # Execute items
@@ -500,10 +504,12 @@ class CBParse(object):
     # Full Selector
     def p_full_selector(self, p):
         """full_selector : ATID"""
+        p[0] = p[1]
 
     def p_full_selector_qualifiers(self, p):
         """full_selector : ATID LBRACKET const_int RBRACKET
                         | ATID LBRACKET qualifiers RBRACKET"""
+        p[0] = p[1]
 
     def p_full_selector_error(self, p):
         """full_selector : ATID LBRACKET error RBRACKET"""
@@ -547,9 +553,18 @@ class CBParse(object):
     ## Selector rules
     def p_selector_define(self, p):
         """selector_define_block : DEFINE ATID EQUALS full_selector newlines selector_definition END optnewlines
-                                | DEFINE ATID COLON full_selector newlines selector_definition END optnewlines
-                                | DEFINE ATID COLON uuid LPAREN full_selector RPAREN newlines selector_definition END optnewlines"""
+                                | DEFINE ATID COLON full_selector newlines selector_definition END optnewlines"""
         self.context[p[2]] = p[6]
+
+        if self.context.get(p[4]) is not None:
+            self.context[p[2]] += self.context[p[4]]
+
+    def p_selector_uuid_define(self, p):
+        """selector_define_block : DEFINE ATID COLON uuid LPAREN full_selector RPAREN newlines selector_definition END optnewlines"""
+        self.context[p[2]] = p[9]
+
+        if self.context.get(p[6]) is not None:
+            self.context[p[2]] += self.context[p[6]]
 
     def p_selector_define_error(self, p):
         """selector_define_block : DEFINE error END optnewlines"""
@@ -596,6 +611,9 @@ class CBParse(object):
 
     def p_selector_assignment(self, p):
         """selector_assign : ATID EQUALS full_selector optnewlines"""
+
+        if self.context.get(p[3]) is not None:
+            self.context[p[1]] += self.context[p[3]]
 
     ## Array rules
     # Array rule
@@ -1051,8 +1069,6 @@ class CBParse(object):
     # Newline rule
     def p_newlines(self, p):
         """newlines : newlines NEWLINE
-                    | newlines COMMENT
-                    | COMMENT
                     | NEWLINE"""
         p[0] = None
 
