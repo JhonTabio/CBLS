@@ -77,6 +77,7 @@ class CommandBlockLanguageServer(LanguageServer):
             self.show_message("Error with filename")
             return
 
+
         file_ext = document.filename.split('.')[1]
         self.parser.path = Path(document.path)
 
@@ -85,6 +86,7 @@ class CommandBlockLanguageServer(LanguageServer):
         diagnostics: List[Diagnostic] = []
 
         if parsed:
+            self.global_context = self.parser.context
             ext, _ = parsed
             if file_ext == "cbscript" and ext == "cblib":
                 diagnostics.append(Diagnostic(
