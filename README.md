@@ -1,7 +1,7 @@
 # Command Block Language Server - CBLS
 ### A language server for CBScript
 
-**Version**: v0.1.2
+**Version**: v0.1.3
 
 CBLS provides developers with a set of language features to improve the experience of coding in 'cbscript' (developed by SethBling).
 
@@ -17,8 +17,9 @@ These are the features I'd like to have implemented, with its current progressio
 - ✅ **Tokenizing documents**
 - ✅ **Syntax highlighting**
 - ⏳ **Parsing rules**
-- ⏳  **Syntax checking**
+- ⏳ **Syntax checking**
 - ⏳ **Autocomplete**
+- ⏳ **Parallelize features**
 - ❌ **Find references**
 - ❌ **Hover support**
 - ⏳ **Diagnostics/Warnings**
