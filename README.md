@@ -1,17 +1,16 @@
 # Command Block Language Server - CBLS
 ### A language server for CBScript
-
 **Version**: v0.1.2
 
-CBLS provides developers with a set of language features to improve the experience of coding in 'cbscript' (developed by SethBling).
+CBLS provides developers with a set of language features to improve the experience of coding in `cbscript`, a command scripting language created by SethBling.
 
-This is a push to provide community made software which aids the development in cbscript.
+This project aims to deliver community-driven tooling to support and enhance `cbscript` development.
 
-CBLS is written in Python, this is because this is my first time implementing the Language Server Protocol (LSP).
+CBLS is currently implemented in **Python** as an initial exploration of the Language Server Protocol, with a **future rewrite in Java**
 
-I hope to redo this project in Rust in the future.
+![CBLS](https://github.com/user-attachments/assets/8f1ddc00-2840-4926-9086-4b95cb444c55)
 
-### Features
+## Features
 These are the features I'd like to have implemented, with its current progression
 
 - ✅ **Tokenizing documents**
@@ -23,6 +22,44 @@ These are the features I'd like to have implemented, with its current progressio
 - ❌ **Hover support**
 - ⏳ **Diagnostics/Warnings**
 - ❌ **Customizable configuration**
+
+## Installation
+
+> Note: CBLS is in early development and is not yet distributed as a packaged release.
+
+### Clone the repository:
+```
+git clone https://github.com/JhonTabio/CBLS.git
+cd CBLS
+```
+
+### Python environment (recommended)
+Create a virtual environment:
+```
+python -m venv .venv
+source .venv/bin/activate
+```
+
+### Install dependencies:
+```
+pip install -r requirements.txt
+```
+
+## Usage
+Start the language server:
+```
+python cbls.py
+```
+
+CBLS communicates over **stdio** and is intended to be launched by an LSP-compatible editor or client
+
+## Editor Support
+CBLS is designed to work with any editor that supports the Language Server Protocol
+
+### Tested / planned integrations:
+- Neovim (via nvim-lspconfig)
+- VS Code (custom LSP client)
+Editor-specific instructions will be added as support matures
 
 ## Related Projects
 
